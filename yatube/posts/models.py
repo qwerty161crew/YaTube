@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from core.models import CreatedModel
 
 User = get_user_model()
 
@@ -18,7 +19,7 @@ class Group(models.Model):
         verbose_name_plural = _('Группы')
 
 
-class Post(models.Model):
+class Post(CreatedModel):
     text = models.TextField(_('текст'))
     pub_date = models.DateTimeField(_('дата публикации'), auto_now_add=True)
     author = models.ForeignKey(
@@ -45,7 +46,7 @@ class Post(models.Model):
         verbose_name = _('Пост')
         verbose_name_plural = _('Посты')
 
-class Comment(models.Model):
+class Comment(CreatedModel):
 
     post = models.ForeignKey(
             Post,
