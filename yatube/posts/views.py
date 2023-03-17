@@ -54,7 +54,7 @@ def post_detail(request, post_id):
 
 @login_required
 def post_create(request):
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None, request.FILES or None)
     if not form.is_valid():
         template = 'posts/create_post.html'
         context = {'form': form}
