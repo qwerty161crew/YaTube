@@ -6,7 +6,9 @@
     <main> 
       <!-- класс py-5 создает отступы сверху и снизу блока -->
       <div class="container py-5">
-        {% include 'posts/includes/switcher.html' %}
+        {% if user.is_authenticated %}
+          {% include 'posts/includes/switcher.html' %}
+        {% endif %}
         {% for post in page_obj %}
           <article>
             <ul>
