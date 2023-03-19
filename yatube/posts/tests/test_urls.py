@@ -16,6 +16,7 @@ GROUP = reverse('posts:group_posts',
                 kwargs={'slug': SLUG})
 LOGIN = reverse('users:login')
 CREATE = reverse('posts:post_create')
+FOLLOW = reverse('posts:follow_index')
 
 
 class PostURLTests(TestCase):
@@ -97,7 +98,9 @@ class PostURLTests(TestCase):
                               [f'{LOGIN}?next=/posts/{self.post.id}/edit/',
                               self.POST_EDIT, self.guest_client],
                               [self.POST_DETAIL, self.POST_EDIT,
-                               self.authorized_client_2]
+                               self.authorized_client_2],
+                              [F'{LOGIN}?next=/follow/', FOLLOW,
+                               self.guest_client]
                               ]
         for destination, address, client in self.REDIRECT_URLS:
             with self.subTest(address=address):
