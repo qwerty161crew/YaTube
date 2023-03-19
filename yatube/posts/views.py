@@ -14,6 +14,7 @@ def get_page(page_number, posts):
     page_obj = paginator.get_page(page_number)
     return page_obj
 
+
 @cache_page(INDEX_PAGE_CACHE_DURATION)
 def index(request):
     posts = Post.objects.all()
@@ -39,7 +40,8 @@ def profile(request, username):
     follow = False
     author = get_object_or_404(User, username=username)
     if request.user.is_authenticated:
-        follow = Follow.objects.filter(user=request.user.id, author=author.id).exists()
+        follow = Follow.objects.filter(
+            user=request.user.id, author=author.id).exists()
     posts = author.posts.all()
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
@@ -96,6 +98,7 @@ def post_edit(request, post_id):
     }
     return render(request, 'posts/create_post.html', context)
 
+
 @login_required
 def add_comment(request, post_id):
     # Получите пост и сохраните его в переменную post.
@@ -108,6 +111,7 @@ def add_comment(request, post_id):
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
 
+
 @login_required
 def follow_index(request):
     follow = Follow.objects.filter(user=request.user)
@@ -119,14 +123,17 @@ def follow_index(request):
     }
     return render(request, 'posts/follow.html', context)
 
+
 @login_required
 def profile_follow(request, username):
     author = get_object_or_404(User, username=username)
-    if author != request.user:
+    follow_exists = Follow.objects.filter(
+        user=request.user, author=author).exists()
+    if author != request.user and not follow_exists:
         follow = Follow(user=request.user, author=author)
         follow.save()
     return redirect('posts:profile', username=username)
-    
+
 
 @login_required
 def profile_unfollow(request, username):

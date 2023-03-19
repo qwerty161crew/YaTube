@@ -8,6 +8,7 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ('group', 'text', 'image')
 
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
@@ -17,4 +18,4 @@ class CommentForm(forms.ModelForm):
         }
         help_texts = {
             'text': 'Текст нового комментария',
-        } 
+        }

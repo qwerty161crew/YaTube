@@ -46,13 +46,14 @@ class Post(CreatedModel):
         verbose_name = _('Пост')
         verbose_name_plural = _('Посты')
 
+
 class Comment(CreatedModel):
 
     post = models.ForeignKey(
-            Post,
-            on_delete=models.CASCADE,
-            related_name='comments',
-            verbose_name='комментарий'
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='комментарий'
     )
     author = models.ForeignKey(
         User,
@@ -67,6 +68,7 @@ class Comment(CreatedModel):
         ordering = ['-created']
         verbose_name = ('Коммент')
         verbose_name_plural = ('Комменты')
+
 
 class Follow(models.Model):
     user = models.ForeignKey(
