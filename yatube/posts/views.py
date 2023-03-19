@@ -1,12 +1,11 @@
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.cache import cache_page
 
 
 from .forms import PostForm, CommentForm
 from .models import Post, Group, User, Comment, Follow
-from .settings import NUMBER_POSTS, INDEX_PAGE_CACHE_DURATION
+from .settings import NUMBER_POSTS
 
 
 def get_page(page_number, posts):
@@ -15,7 +14,6 @@ def get_page(page_number, posts):
     return page_obj
 
 
-@cache_page(INDEX_PAGE_CACHE_DURATION)
 def index(request):
     posts = Post.objects.all()
     page_obj = get_page(request.GET.get('page'), posts)
