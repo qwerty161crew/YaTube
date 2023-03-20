@@ -1,9 +1,12 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.core.files.uploadedfile import SimpleUploadedFile
 
-from ..models import User, Post, Group
+from ..models import User, Post, Group, Follow
 from ..settings import NUMBER_POSTS
 
+
+FOLLOWER_USERNAME = 'kUZEN'
 USERNAME = 'post_author'
 SLUG = 'test-slug'
 SLUG_1 = 'test-slug_1'
@@ -14,6 +17,9 @@ GROUP = reverse('posts:group_posts',
                 kwargs={'slug': SLUG})
 GROUP_1 = reverse('posts:group_posts',
                   kwargs={'slug': SLUG_1})
+FOLLOW = reverse('posts:follow_index')
+PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={'username': USERNAME})
+PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={'username': FOLLOWER_USERNAME})
 
 
 class PostUrlTests(TestCase):
@@ -21,6 +27,7 @@ class PostUrlTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USERNAME)
+        cls.user_follow = User.objects.create_user(username=FOLLOWER_USERNAME)
         cls.group = Group.objects.create(
             title='Тестовый заголовок',
             slug=SLUG,
@@ -31,18 +38,43 @@ class PostUrlTests(TestCase):
             slug='test-slug_1',
             description='Тестовое описание',
         )
+        small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        cls.image_name = 'small.gif'
+        cls.uploaded = SimpleUploadedFile(
+            name=cls.image_name,
+            content=small_gif,
+            content_type='image/gif'
+        )
+        
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый текст',
             group=cls.group,
+            image=cls.uploaded
         )
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
+        cls.COMMENT = reverse('posts:add_comment',
+                              kwargs={'post_id': cls.post.id})
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
+        cls.follower = Client()
+        cls.follower.force_login(cls.user_follow)
 
-    def setUp(self):
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
-
+    # def test_follow(self):
+    #     follower_count = Follow.objects.count()
+    #     self.follower.get(reverse(
+    #         'posts:profile_follow',
+    #         args=(self.authorized_client, )))
+    #     self.assertEqual(Follow.objects.count(), follower_count + 1)
+    
     def test_post_not_in_another_group(self):
         response = self.authorized_client.get(GROUP_1)
         self.assertNotIn(self.post, response.context['page_obj'])
@@ -53,6 +85,7 @@ class PostUrlTests(TestCase):
             [GROUP, 'page_obj'],
             [PROFILE, 'page_obj'],
             [self.POST_DETAIL, 'post'],
+            # [FOLLOW, 'page_obj']
         ]
         for url, obj in responses:
             with self.subTest(url=url):
@@ -93,7 +126,7 @@ class PaginatorViewsTest(TestCase):
             Post(
                 text='Тестовый текст',
                 author=cls.user,
-                group=cls.group
+                group=cls.group,
             ) for i in range(NUMBER_POSTS + 1)
         )
 

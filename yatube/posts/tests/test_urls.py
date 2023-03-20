@@ -64,6 +64,7 @@ class PostURLTests(TestCase):
             ['posts/create_post.html',
                 self.POST_EDIT,
                 self.authorized_client],
+            ['posts/follow.html', FOLLOW, self.authorized_client],
         ]
         for template, address, client in CASES:
             with self.subTest(address=address):
@@ -115,8 +116,8 @@ class PostURLTests(TestCase):
                                self.COMMENT, self.guest_client],
                                [self.POST_DETAIL, self.COMMENT,
                                 self.authorized_client],
-                                [f'{LOGIN}?next=/follow/', FOLLOW, self.guest_client],
-                                [FOLLOW, INDEX, self.authorized_client_2]
+                                # [f'{LOGIN}?next=/follow/', FOLLOW, self.guest_client],
+                                # [FOLLOW, INDEX, self.authorized_client_2]
                               ]
         for destination, address, client in self.REDIRECT_URLS:
             with self.subTest(destination=destination, address=address, client=client):

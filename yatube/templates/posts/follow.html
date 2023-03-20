@@ -19,7 +19,7 @@
               </li>
             </ul> 
             {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-            <img class="card-img my-2" src="{{ im.url }}">
+              <img class="card-img my-2" src="{{ im.url }}">
             {% endthumbnail %}
             <p>
               {{ post.text | linebreaksbr }}
@@ -30,14 +30,10 @@
           </article>
           {% if not forloop.last %}
             <hr>
-            {% endif %}  
+          {% endif %}  
         {% endfor %}
         {% include "includes/paginator.html" %}
         <!-- под последним постом нет линии -->
       </div>  
-    </main>
-    <!-- Использованы классы бустрапа: -->
-    <!-- border-top: создаёт тонкую линию сверху блока -->
-    <!-- text-center: выравнивает текстовые блоки внутри блока по центру -->
-    <!-- py-3: контент внутри размещается с отступом сверху и снизу -->         
+    </main>     
 {%endblock content%}
