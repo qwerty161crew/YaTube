@@ -1,4 +1,4 @@
-from .models import Post, Group
+from .models import Post, Group, Follow, Comment
 
 from django.contrib import admin
 
@@ -13,3 +13,5 @@ class PostAdmin(admin.ModelAdmin):
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group)
+admin.site.register(Follow)
+admin.site.register(Comment)

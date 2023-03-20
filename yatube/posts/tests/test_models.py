@@ -1,6 +1,7 @@
 from django.test import TestCase
 
-from ..models import Group, Post, User
+from ..models import Group, Post, User, Follow, Comment
+from ..settings import SLICE
 
 
 class PostModelTest(TestCase):
@@ -21,7 +22,7 @@ class PostModelTest(TestCase):
     def test_models_have_correct_object_names(self):
         """__str__  task - это строчка с содержимым task.title."""
         post = PostModelTest.post  # Обратите внимание на синтаксис
-        expected_object_name = post.text[:15]
+        expected_object_name = post.text[:SLICE]
         self.assertEqual(expected_object_name, str(post))
         group = PostModelTest.group
         expected_object_name = group.title

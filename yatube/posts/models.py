@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from core.models import CreatedModel
 
+from .settings import SLICE
 User = get_user_model()
 
 
@@ -39,7 +40,7 @@ class Post(CreatedModel):
     )
 
     def __str__(self):
-        return self.text[:15]
+        return self.text[:SLICE]
 
     class Meta:
         ordering = ('-pub_date',)
@@ -58,11 +59,14 @@ class Comment(CreatedModel):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments_author',
+        related_name='comments',
         verbose_name='автор_комментария'
     )
 
     text = models.TextField(_('текст'))
+
+    def __str__(self):
+        return self.text[:SLICE]
 
     class Meta:
         ordering = ['-created']
@@ -81,6 +85,9 @@ class Follow(models.Model):
         related_name='following',
         on_delete=models.CASCADE,
     )
+
+    def __str__(self):
+        return self.user
 
     class Meta:
         verbose_name = ('Подписка')

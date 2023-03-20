@@ -17,6 +17,8 @@ GROUP = reverse('posts:group_posts',
 LOGIN = reverse('users:login')
 CREATE = reverse('posts:post_create')
 FOLLOW = reverse('posts:follow_index')
+PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={'username': USERNAME})
+PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={'username': ANOTHER_USERNAME})
 
 
 class PostURLTests(TestCase):
@@ -38,13 +40,13 @@ class PostURLTests(TestCase):
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-
-    def setUp(self):
-        self.guest_client = Client()
-        self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
-        self.authorized_client_2 = Client()
-        self.authorized_client_2.force_login(self.another_user)
+        cls.COMMENT = reverse('posts:add_comment',
+                              kwargs={'post_id': cls.post.id})
+        cls.guest_client = Client()
+        cls.authorized_client = Client()
+        cls.authorized_client.force_login(cls.user)
+        cls.authorized_client_2 = Client()
+        cls.authorized_client_2.force_login(cls.another_user)
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -86,7 +88,15 @@ class PostURLTests(TestCase):
              self.authorized_client, HTTPStatus.OK],
             [self.POST_EDIT,
              self.guest_client, HTTPStatus.FOUND],
-            [self.POST_EDIT, self.authorized_client_2, HTTPStatus.FOUND]
+            [self.POST_EDIT, self.authorized_client_2, HTTPStatus.FOUND], 
+            [FOLLOW, self.guest_client, HTTPStatus.FOUND], 
+            [FOLLOW, self.authorized_client, HTTPStatus.OK],
+            [PROFILE_FOLLOW, self.guest_client, HTTPStatus.FOUND], 
+            # [PROFILE_FOLLOW, self.authorized_client_2, HTTPStatus.OK],
+            # [PROFILE_UNFOLLOW, self.guest_client, HTTPStatus.FOUND], 
+            # [PROFILE_UNFOLLOW, self.authorized_client, HTTPStatus.OK],
+            [self.COMMENT, self.guest_client, HTTPStatus.FOUND], 
+            # [self.COMMENT, self.authorized_client_2, HTTPStatus.OK]
         ]
         for url, client, answer in cases:
             with self.subTest(url=url, client=client, answer=answer):
@@ -100,9 +110,15 @@ class PostURLTests(TestCase):
                               [self.POST_DETAIL, self.POST_EDIT,
                                self.authorized_client_2],
                               [F'{LOGIN}?next=/follow/', FOLLOW,
-                               self.guest_client]
+                               self.guest_client],
+                              [f'{LOGIN}?next=/posts/{self.post.id}/comment/',
+                               self.COMMENT, self.guest_client],
+                               [self.POST_DETAIL, self.COMMENT,
+                                self.authorized_client],
+                                [f'{LOGIN}?next=/follow/', FOLLOW, self.guest_client],
+                                [FOLLOW, INDEX, self.authorized_client_2]
                               ]
         for destination, address, client in self.REDIRECT_URLS:
-            with self.subTest(address=address):
+            with self.subTest(destination=destination, address=address, client=client):
                 response = client.get(address)
                 self.assertRedirects(response, destination)

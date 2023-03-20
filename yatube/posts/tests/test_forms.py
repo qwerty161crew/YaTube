@@ -29,15 +29,12 @@ class PostCreateFormTests(TestCase):
             text='Тестовый текст',
             group=cls.group,
         )
-
+        cls.authorized_client = Client()  # Авторизованный
+        cls.authorized_client.force_login(cls.user)
         cls.EDIT_POST = reverse('posts:post_edit',
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-
-    def setUp(self):
-        self.authorized_client = Client()  # Авторизованный
-        self.authorized_client.force_login(self.user)
 
     def test_create_post(self):
         form_data = {
