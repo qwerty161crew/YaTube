@@ -69,11 +69,17 @@ class PostUrlTests(TestCase):
         cls.follower = Client()
         cls.follower.force_login(cls.user_follow)
 
+
     # def test_follow(self):
+    #     self.follow = Follow.objects.create(
+    #         instance=User,
+    #         user=self.follower,
+    #         author=self.authorized_client,
+    #     )
     #     follower_count = Follow.objects.count()
     #     self.follower.get(reverse(
     #         'posts:profile_follow',
-    #         args=(self.authorized_client, )))
+    #         args=(self.authorized_client, )))     
     #     self.assertEqual(Follow.objects.count(), follower_count + 1)
 
     def test_post_not_in_another_group(self):
