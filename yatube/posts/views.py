@@ -18,6 +18,7 @@ def index(request):
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
         'page_obj': page_obj,
+        'index': True
     }
     return render(request, 'posts/index.html', context)
 
@@ -115,24 +116,24 @@ def follow_index(request):
     posts = Post.objects.filter(author__in=follow_authors)
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
-        'page_obj': page_obj
+        'page_obj': page_obj,
+        'follow': True
     }
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
-def profile_follow(request, username):
-    author = get_object_or_404(User, username=username)
-    follow_exists = Follow.objects.filter(
-        user=request.user, author=author).exists()
-    if author != request.user and not follow_exists:
-        Follow(user=request.user, author=author).save()
-    return redirect('posts:profile', username=username)
+def profile_follow(request, author_name):
+    if author_name != request.user.username:
+        author = get_object_or_404(User, username=author_name)
+        try:
+            Follow(user=request.user, author=author).save()
+        except:
+            pass
+    return redirect('posts:profile', username=author_name)
 
 
 @login_required
-def profile_unfollow(request, username):
-    author = get_object_or_404(User, username=username)
-    follow = get_object_or_404(Follow, user=request.user, author=author)
-    follow.delete()
-    return redirect('posts:profile', username=username)
+def profile_unfollow(request, author_name):
+    follow = get_object_or_404(Follow, user=request.user, author__username=author_name).delete()
+    return redirect('posts:profile', username=author_name)
