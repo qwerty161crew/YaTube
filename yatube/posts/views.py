@@ -18,7 +18,6 @@ def index(request):
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
         'page_obj': page_obj,
-        'user': request.user
     }
     return render(request, 'posts/index.html', context)
 

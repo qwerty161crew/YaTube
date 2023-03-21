@@ -35,6 +35,8 @@ class PostCreateFormTests(TestCase):
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
+        
+        
 
     def test_create_post(self):
         form_data = {

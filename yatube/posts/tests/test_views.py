@@ -19,7 +19,8 @@ GROUP_1 = reverse('posts:group_posts',
                   kwargs={'slug': SLUG_1})
 FOLLOW = reverse('posts:follow_index')
 PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={'username': USERNAME})
-PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={'username': FOLLOWER_USERNAME})
+PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={
+                           'username': FOLLOWER_USERNAME})
 
 
 class PostUrlTests(TestCase):
@@ -52,7 +53,7 @@ class PostUrlTests(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
-        
+
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый текст',
@@ -74,7 +75,7 @@ class PostUrlTests(TestCase):
     #         'posts:profile_follow',
     #         args=(self.authorized_client, )))
     #     self.assertEqual(Follow.objects.count(), follower_count + 1)
-    
+
     def test_post_not_in_another_group(self):
         response = self.authorized_client.get(GROUP_1)
         self.assertNotIn(self.post, response.context['page_obj'])

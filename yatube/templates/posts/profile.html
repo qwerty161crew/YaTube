@@ -6,8 +6,8 @@
 {% block content %}
       <h1>Все посты пользователя {{ author.get_full_name }}</h1>
         <h3>Всего постов: {{ author.posts.count }} </h3>  
-        <h3>Всего комментариев: {{ author.posts.count }} </h3>
-        <h3>Всего подписчиков: {{ author.posts.count }} </h3>  
+        <h3>Всего комментариев: {{ comment.count }} </h3>
+        <h3>Всего подписчиков: {{ follow.user.count }} </h3>  
       {% if user.is_authenticated %} 
         {% if following %}
     <a
