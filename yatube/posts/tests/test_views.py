@@ -143,10 +143,11 @@ class PaginatorViewsTest(TestCase):
     def test_page(self):
         urls = [
             [INDEX, NUMBER_POSTS], [GROUP, NUMBER_POSTS],
-            [PROFILE, NUMBER_POSTS],
+            [PROFILE, NUMBER_POSTS], [FOLLOW, NUMBER_POSTS],
             [f'{INDEX}?page=2', 1],
             [f'{GROUP}?page=2', 1],
-            [f'{PROFILE}?page=2', 1]
+            [f'{PROFILE}?page=2', 1],
+            [f'{FOLLOW}?page=2', 1]
         ]
         for url, number in urls:
             with self.subTest(url=url):

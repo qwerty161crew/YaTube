@@ -1,7 +1,9 @@
 from django.test import TestCase
 from django.urls import reverse
 
-APP_NAME = 'posts'
+from ..urls import app_name
+
+
 POST_ID = 1
 USERNAME = 'auth'
 SLUG = 'test-slug'
@@ -21,4 +23,4 @@ class PostUrlTests(TestCase):
     def test_urls_uses_correct_route(self):
 
         for url, name, args in CASES:
-            self.assertEqual(url, reverse(f'{APP_NAME}:{name}', args=args))
+            self.assertEqual(url, reverse(f'{app_name}:{name}', args=args))

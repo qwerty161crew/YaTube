@@ -51,15 +51,12 @@ class PostCreateFormTests(TestCase):
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-        
-        
 
     def test_create_post(self):
         form_data = {
             'text': 'text',
-            # 'image': self.uploaded,
             'group': self.group.pk,
-            
+
         }
         """Тестирование создания поста"""
         posts_count = Post.objects.count()
@@ -74,7 +71,6 @@ class PostCreateFormTests(TestCase):
         post = posts[0]
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
-        # self.assertEqual(post.image, form_data['image'])
         self.assertEqual(post.author, self.user)
         self.assertRedirects(response, PROFILE)
 
@@ -112,3 +108,23 @@ class PostCreateFormTests(TestCase):
                     form_field = response.context.get('form').fields.get(
                         value)
                     self.assertIsInstance(form_field, expected)
+
+    # def test_create__image(self):
+    #     form_data = {
+    #         'text': 'Тестовый текст',
+    #         'image': self.uploaded,
+    #         'group': self.group.pk,
+
+    #     }
+    #     """Тестирование создания поста"""
+    #     posts_count = Post.objects.count()
+    #     response = self.authorized_client.post(
+    #         CREATE_POST,
+    #         data=form_data,
+    #         follow=True
+    #     )
+    #     post = Post.objects.get(id=self.post.id)
+    #     self.assertEqual(form_data['text'], post.text)
+    #     self.assertEqual(form_data['image'], post.image)
+    #     self.assertEqual(form_data['group'], post.group.id)
+    #     self.assertRedirects(response, self.POST_DETAIL)
