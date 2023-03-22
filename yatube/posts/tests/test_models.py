@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ..models import Group, Post, User, Follow, Comment
+from ..models import Group, Post, User
 from ..settings import SLICE
 
 
@@ -24,9 +24,8 @@ class PostModelTest(TestCase):
         post = PostModelTest.post  # Обратите внимание на синтаксис
         expected_object_name = post.text[:SLICE]
         self.assertEqual(expected_object_name, str(post))
-        
+
     def test_models_group(self):
         group = PostModelTest.group
         expected_object_name = group.title
         self.assertEqual(expected_object_name, str(group))
-

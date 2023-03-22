@@ -56,7 +56,7 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'text',
             'group': self.group.pk,
-
+            'file': self.uploaded
         }
         """Тестирование создания поста"""
         post_count_initial = Post.objects.count()
@@ -104,23 +104,3 @@ class PostCreateFormTests(TestCase):
                     form_field = response.context.get('form').fields.get(
                         value)
                     self.assertIsInstance(form_field, expected)
-
-    # def test_create__image(self):
-    #     form_data = {
-    #         'text': 'Тестовый текст',
-    #         'image': self.uploaded,
-    #         'group': self.group.pk,
-
-    #     }
-    #     """Тестирование создания поста"""
-    #     posts_count = Post.objects.count()
-    #     response = self.authorized_client.post(
-    #         CREATE_POST,
-    #         data=form_data,
-    #         follow=True
-    #     )
-    #     post = Post.objects.get(id=self.post.id)
-    #     self.assertEqual(form_data['text'], post.text)
-    #     self.assertEqual(form_data['image'], post.image)
-    #     self.assertEqual(form_data['group'], post.group.id)
-    #     self.assertRedirects(response, self.POST_DETAIL)

@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, render, redirect
 
 from .forms import PostForm, CommentForm
-from .models import Post, Group, User, Comment, Follow
+from .models import Post, Group, User, Follow
 from .settings import NUMBER_POSTS
 
 
@@ -35,10 +35,10 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    follow = (request.user.is_authenticated
-                 and Follow.objects.filter(user=request.user,
-                                           author=author).exists())
     author = get_object_or_404(User, username=username)
+    follow = (request.user.is_authenticated
+              and Follow.objects.filter(user=request.user,
+                                        author=author).exists())
     posts = author.posts.all()
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
@@ -124,12 +124,13 @@ def profile_follow(request, author_name):
         author = get_object_or_404(User, username=author_name)
         try:
             Follow(user=request.user, author=author).save()
-        except:
+        except ValueError:
             pass
     return redirect('posts:profile', username=author_name)
 
 
 @login_required
 def profile_unfollow(request, author_name):
-    get_object_or_404(Follow, user=request.user, author__username=author_name).delete()
+    get_object_or_404(Follow, user=request.user,
+                      author__username=author_name).delete()
     return redirect('posts:profile', username=author_name)

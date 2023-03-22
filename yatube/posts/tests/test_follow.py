@@ -8,7 +8,7 @@ FOLLOWER = 'user'
 FOLLOWING_URL = reverse('posts:profile_follow',
                         kwargs={'author_name': AUTHOR})
 UNFOLLOWING_URL = reverse('posts:profile_unfollow',
-                        kwargs={'author_name': AUTHOR})
+                          kwargs={'author_name': AUTHOR})
 
 
 class PostUrlTests(TestCase):
@@ -29,7 +29,7 @@ class PostUrlTests(TestCase):
     def test_following(self):
         self.follower.get(FOLLOWING_URL)
         self.assertTrue(Follow.objects.filter(
-              author=self.user, user=self.user_follow).exists())
+            author=self.user, user=self.user_follow).exists())
         self.follower.get(UNFOLLOWING_URL)
         self.assertFalse(Follow.objects.filter(
-              author=self.user, user=self.user_follow).exists())
+            author=self.user, user=self.user_follow).exists())

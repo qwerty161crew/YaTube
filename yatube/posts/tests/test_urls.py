@@ -5,6 +5,8 @@ from http import HTTPStatus
 
 from ..models import Post, Group, User
 
+FOLLOWING = 'FOLLOW'
+FOLLOWER = 'user'
 GROUP_TITLE = 'Тестовая группа'
 USERNAME = 'post_author'
 ANOTHER_USERNAME = 'kUZEN'
@@ -17,9 +19,10 @@ GROUP = reverse('posts:group_posts',
 LOGIN = reverse('users:login')
 CREATE = reverse('posts:post_create')
 FOLLOW = reverse('posts:follow_index')
-PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={'username': USERNAME})
+PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={
+                         'author_name': FOLLOWING})
 PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={
-                           'username': ANOTHER_USERNAME})
+                           'author_name': FOLLOWING})
 
 
 class PostURLTests(TestCase):
@@ -27,7 +30,9 @@ class PostURLTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USERNAME)
+        cls.user_following = User.objects.create_user(username=FOLLOWING)
         cls.another_user = User.objects.create_user(username=ANOTHER_USERNAME)
+        cls.user_follow = User.objects.create_user(username=FOLLOWER)
         cls.group = Group.objects.create(
             title=GROUP_TITLE,
             slug=SLUG,
@@ -48,6 +53,8 @@ class PostURLTests(TestCase):
         cls.authorized_client.force_login(cls.user)
         cls.authorized_client_2 = Client()
         cls.authorized_client_2.force_login(cls.another_user)
+        cls.follower = Client()
+        cls.follower.force_login(cls.user_follow)
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -92,13 +99,13 @@ class PostURLTests(TestCase):
              self.guest_client, HTTPStatus.FOUND],
             [self.POST_EDIT, self.authorized_client_2, HTTPStatus.FOUND],
             [FOLLOW, self.guest_client, HTTPStatus.FOUND],
-            # [FOLLOW, self.authorized_client, HTTPStatus.OK],
-            # [PROFILE_FOLLOW, self.guest_client, HTTPStatus.FOUND],
-            # [PROFILE_FOLLOW, self.authorized_client_2, HTTPStatus.OK],
-            # [PROFILE_UNFOLLOW, self.guest_client, HTTPStatus.FOUND],
-            # [PROFILE_UNFOLLOW, self.authorized_client, HTTPStatus.OK],
+            [FOLLOW, self.follower, HTTPStatus.OK],
+            [PROFILE_FOLLOW, self.guest_client, HTTPStatus.FOUND],
+            # [PROFILE_FOLLOW, self.follower, HTTPStatus.OK],
+            [PROFILE_UNFOLLOW, self.guest_client, HTTPStatus.FOUND],
+            # [PROFILE_UNFOLLOW, self.follower, HTTPStatus.OK],
             [self.COMMENT, self.guest_client, HTTPStatus.FOUND],
-            # [self.COMMENT, self.authorized_client_2, HTTPStatus.OK]
+            # [self.COMMENT, self.follower, HTTPStatus.OK]
         ]
         for url, client, answer in cases:
             with self.subTest(url=url, client=client, answer=answer):
@@ -111,16 +118,17 @@ class PostURLTests(TestCase):
                               self.POST_EDIT, self.guest_client],
                               [self.POST_DETAIL, self.POST_EDIT,
                                self.authorized_client_2],
-                              [F'{LOGIN}?next=/follow/', FOLLOW,
+                              [f'{LOGIN}?next=/follow/', FOLLOW,
                                self.guest_client],
                               [f'{LOGIN}?next=/posts/{self.post.id}/comment/',
                                self.COMMENT, self.guest_client],
                               [self.POST_DETAIL, self.COMMENT,
-                               self.authorized_client],
-                              # [f'{LOGIN}?next=/follow/', FOLLOW, self.guest_client],
-                              # [FOLLOW, INDEX, self.authorized_client_2]
+                               self.follower],
+                              [f'{LOGIN}?next=/follow/',
+                                  FOLLOW, self.guest_client],
                               ]
         for destination, address, client in self.REDIRECT_URLS:
-            with self.subTest(destination=destination, address=address, client=client):
+            with self.subTest(destination=destination,
+                              address=address, client=client):
                 response = client.get(address)
                 self.assertRedirects(response, destination)
