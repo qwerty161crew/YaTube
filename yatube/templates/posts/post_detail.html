@@ -6,6 +6,7 @@
 {% block header %} Пост пользователя {{ post.author.get_full_name }} {% endblock %}
 {% block content %}
     <main>
+      <h1>{{ post.comment_set.all.count }}</h1>
       <div class="row">
         <aside class="col-12 col-md-3">
           <ul class="list-group list-group-flush">
