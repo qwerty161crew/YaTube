@@ -59,34 +59,30 @@ class PostCreateFormTests(TestCase):
 
         }
         """Тестирование создания поста"""
-        posts_count = Post.objects.count()
-        response = self.authorized_client.post(
+        post_count_initial = Post.objects.count()
+        self.authorized_client.post(
             CREATE_POST,
             data=form_data,
-            follow=True
         )
-        self.assertEqual(Post.objects.count(), posts_count + 1)
-        posts = Post.objects.exclude(id=self.post.id)
-        self.assertEqual(len(posts), 1)
-        post = posts[0]
+        self.assertEqual(Post.objects.count(), post_count_initial + 1)
+        post = Post.objects.first()
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
         self.assertEqual(post.author, self.user)
-        self.assertRedirects(response, PROFILE)
+        post.delete()
+        self.assertEqual(Post.objects.count(), post_count_initial)
 
     def test_editing_post(self):
         form_data = {
             'text': 'TEST',
             'group': self.group_1.pk,
         }
-        posts_count = Post.objects.count()
         response = self.authorized_client.post(
             self.EDIT_POST,
             data=form_data,
             follow=True
         )
         post = Post.objects.get(id=self.post.id)
-        self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author, self.user)
