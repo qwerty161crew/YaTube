@@ -6,9 +6,9 @@ from ..models import User, Post, Follow
 AUTHOR = 'author'
 FOLLOWER = 'user'
 FOLLOWING_URL = reverse('posts:profile_follow',
-                        kwargs={'author_name': AUTHOR})
+                        kwargs={'username': AUTHOR})
 UNFOLLOWING_URL = reverse('posts:profile_unfollow',
-                          kwargs={'author_name': AUTHOR})
+                          kwargs={'username': AUTHOR})
 
 
 class PostUrlTests(TestCase):

@@ -19,9 +19,9 @@ GROUP_1 = reverse('posts:group_posts',
                   kwargs={'slug': SLUG_1})
 FOLLOW = reverse('posts:follow_index')
 PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={
-                         'author_name': USERNAME})
+                         'username': USERNAME})
 PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={
-                           'author_name': FOLLOWER_USERNAME})
+                           'username': FOLLOWER_USERNAME})
 
 
 class PostUrlTests(TestCase):

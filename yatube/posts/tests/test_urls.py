@@ -20,9 +20,9 @@ LOGIN = reverse('users:login')
 CREATE = reverse('posts:post_create')
 FOLLOW = reverse('posts:follow_index')
 PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={
-                         'author_name': FOLLOWING})
+                         'username': FOLLOWING})
 PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={
-                           'author_name': FOLLOWING})
+                           'username': FOLLOWING})
 
 
 class PostURLTests(TestCase):
