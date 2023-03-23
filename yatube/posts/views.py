@@ -18,7 +18,6 @@ def index(request):
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
         'page_obj': page_obj,
-        'index': True
     }
     return render(request, 'posts/index.html', context)
 
@@ -36,7 +35,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    follow = (request.user.is_authenticated
+    follow = (request.user.is_authenticated and author != request.username
               and Follow.objects.filter(user=request.user,
                                         author=author).exists())
     posts = author.posts.all()
@@ -113,17 +112,15 @@ def follow_index(request):
     page_obj = get_page(request.GET.get('page'), posts)
     context = {
         'page_obj': page_obj,
-        'follow': True
     }
     return render(request, 'posts/follow.html', context)
 
 
 @login_required
 def profile_follow(request, username):
-    follow_exists = Follow.objects.filter(
-        user=request.user, author=request.user).exists()
-    if username != request.user and not follow_exists:
-        author = get_object_or_404(User, username=username)
+    author = get_object_or_404(User, username=username)
+    if author != request.user and not (Follow.objects.filter(
+        user=request.user, author=author).exists()):
         Follow(user=request.user, author=author).save()
     return redirect('posts:profile', username=username)
 
