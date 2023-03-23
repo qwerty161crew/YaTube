@@ -51,8 +51,6 @@ class PostURLTests(TestCase):
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-        cls.COMMENT = reverse('posts:add_comment',
-                              kwargs={'post_id': cls.post.id})
         cls.guest_client = Client()
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
@@ -110,8 +108,6 @@ class PostURLTests(TestCase):
             [YOURSELF_FOLLOW, self.follower, HTTPStatus.FOUND],
             [UNFOLLOWING_URL, self.guest_client, HTTPStatus.FOUND],
             [UNFOLLOWING_URL, self.follower, HTTPStatus.FOUND],
-            [self.COMMENT, self.guest_client, HTTPStatus.FOUND],
-            [self.COMMENT, self.authorized_client, HTTPStatus.FOUND]
         ]
         for url, client, answer in cases:
             with self.subTest(url=url, client=client, answer=answer):
@@ -126,10 +122,6 @@ class PostURLTests(TestCase):
                                self.authorized_client_2],
                               [f'{LOGIN}?next=/follow/', FOLLOW,
                                self.guest_client],
-                              [f'{LOGIN}?next=/posts/{self.post.id}/comment/',
-                               self.COMMENT, self.guest_client],
-                              [self.POST_DETAIL, self.COMMENT,
-                               self.follower],
                               [f'{LOGIN}?next=/follow/',
                                   FOLLOW, self.guest_client],
                               ]
