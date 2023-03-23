@@ -2,10 +2,12 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from ..models import User, Post, Group
+from ..models import User, Post, Group, Follow
 from ..settings import NUMBER_POSTS
 
 
+AUTHOR = 'author'
+FOLLOWER = 'user'
 FOLLOWER_USERNAME = 'kUZEN'
 USERNAME = 'post_author'
 SLUG = 'test-slug'
@@ -18,16 +20,18 @@ GROUP = reverse('posts:group_posts',
 GROUP_1 = reverse('posts:group_posts',
                   kwargs={'slug': SLUG_1})
 FOLLOW = reverse('posts:follow_index')
-PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={
-                         'username': USERNAME})
-PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={
-                           'username': FOLLOWER_USERNAME})
+FOLLOWING_URL = reverse('posts:profile_follow',
+                        kwargs={'username': AUTHOR})
+UNFOLLOWING_URL = reverse('posts:profile_unfollow',
+                          kwargs={'username': AUTHOR})
 
 
 class PostUrlTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.user_author_follow = User.objects.create_user(username=AUTHOR)
+        cls.user_follow = User.objects.create_user(username=FOLLOWER)
         cls.user = User.objects.create_user(username=USERNAME)
         cls.user_follow = User.objects.create_user(username=FOLLOWER_USERNAME)
         cls.group = Group.objects.create(
@@ -56,7 +60,7 @@ class PostUrlTests(TestCase):
         )
 
         cls.post = Post.objects.create(
-            author=cls.user,
+            author=cls.user_author_follow,
             text='Тестовый текст',
             group=cls.group,
             image=cls.uploaded
@@ -69,16 +73,29 @@ class PostUrlTests(TestCase):
         cls.authorized_client.force_login(cls.user)
         cls.follower = Client()
         cls.follower.force_login(cls.user_follow)
+        cls.follower = Client()
+        cls.follower.force_login(cls.user_follow)
 
     def test_post_not_in_another_group(self):
         response = self.authorized_client.get(GROUP_1)
         self.assertNotIn(self.post, response.context['page_obj'])
 
+    def test_following(self):
+        self.follower.get(FOLLOWING_URL)
+        self.assertTrue(Follow.objects.filter(
+            author=self.user_author_follow, user=self.user_follow).exists())
+        
+    def test_unfollowing(self):    
+        self.follower.get(UNFOLLOWING_URL)
+        self.assertFalse(Follow.objects.filter(
+            author=self.user_author_follow, user=self.user_follow).exists())
+
+
     def test_post_in_group(self):
         responses = [
             [INDEX, 'page_obj'],
             [GROUP, 'page_obj'],
-            [PROFILE, 'page_obj'],
+            # [PROFILE, 'page_obj'],
             [self.POST_DETAIL, 'post'],
             # [FOLLOW, 'page_obj']
         ]

@@ -5,6 +5,7 @@ from http import HTTPStatus
 
 from ..models import Post, Group, User
 
+AUTHOR = 'author'
 FOLLOWING = 'FOLLOW'
 FOLLOWER = 'user'
 GROUP_TITLE = 'Тестовая группа'
@@ -19,16 +20,20 @@ GROUP = reverse('posts:group_posts',
 LOGIN = reverse('users:login')
 CREATE = reverse('posts:post_create')
 FOLLOW = reverse('posts:follow_index')
-PROFILE_FOLLOW = reverse('posts:profile_follow', kwargs={
-                         'username': FOLLOWING})
-PROFILE_UNFOLLOW = reverse('posts:profile_unfollow', kwargs={
-                           'username': FOLLOWING})
+FOLLOWING_URL = reverse('posts:profile_follow',
+                        kwargs={'username': AUTHOR})
+UNFOLLOWING_URL = reverse('posts:profile_unfollow',
+                          kwargs={'username': AUTHOR})
+YOURSELF_FOLLOW = reverse('posts:profile_follow',
+                        kwargs={'username': FOLLOWING})
+
 
 
 class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.follow = User.objects.create_user(username=AUTHOR)
         cls.user = User.objects.create_user(username=USERNAME)
         cls.user_following = User.objects.create_user(username=FOLLOWING)
         cls.another_user = User.objects.create_user(username=ANOTHER_USERNAME)
@@ -100,12 +105,13 @@ class PostURLTests(TestCase):
             [self.POST_EDIT, self.authorized_client_2, HTTPStatus.FOUND],
             [FOLLOW, self.guest_client, HTTPStatus.FOUND],
             [FOLLOW, self.follower, HTTPStatus.OK],
-            [PROFILE_FOLLOW, self.guest_client, HTTPStatus.FOUND],
-            # [PROFILE_FOLLOW, self.follower, HTTPStatus.OK],
-            [PROFILE_UNFOLLOW, self.guest_client, HTTPStatus.FOUND],
-            # [PROFILE_UNFOLLOW, self.follower, HTTPStatus.OK],
+            [FOLLOWING_URL, self.guest_client, HTTPStatus.FOUND],
+            [FOLLOWING_URL, self.follower, HTTPStatus.FOUND],
+            [YOURSELF_FOLLOW, self.follower, HTTPStatus.FOUND],
+            [UNFOLLOWING_URL, self.guest_client, HTTPStatus.FOUND],
+            [UNFOLLOWING_URL, self.follower, HTTPStatus.FOUND],
             [self.COMMENT, self.guest_client, HTTPStatus.FOUND],
-            # [self.COMMENT, self.follower, HTTPStatus.OK]
+            [self.COMMENT, self.authorized_client, HTTPStatus.FOUND]
         ]
         for url, client, answer in cases:
             with self.subTest(url=url, client=client, answer=answer):
