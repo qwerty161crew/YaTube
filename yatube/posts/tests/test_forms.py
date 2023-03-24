@@ -56,7 +56,7 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'text',
             'group': self.group.pk,
-            'file': self.uploaded, 
+            'file': self.uploaded,
             'author': USERNAME
         }
         """Тестирование создания поста"""

@@ -84,12 +84,11 @@ class PostUrlTests(TestCase):
         self.follower.get(FOLLOWING_URL)
         self.assertTrue(Follow.objects.filter(
             author=self.user_author_follow, user=self.user_follow).exists())
-        
-    def test_unfollowing(self):    
+
+    def test_unfollowing(self):
         self.follower.get(UNFOLLOWING_URL)
         self.assertFalse(Follow.objects.filter(
             author=self.user_author_follow, user=self.user_follow).exists())
-
 
     def test_post_in_group(self):
         responses = [

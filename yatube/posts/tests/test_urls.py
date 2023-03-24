@@ -29,8 +29,9 @@ YOURSELF_FOLLOW = reverse('posts:profile_follow',
 CREATE_LOGIN = reverse('users:login') + '?next=/create/'
 LOGIN_FOLLOW = reverse('users:login') + '?next=/follow/'
 UNFOLLOW = reverse('posts:profile_unfollow',
-                          kwargs={'username': AUTHOR})
+                   kwargs={'username': AUTHOR})
 LOGIN_UNFOLLOR = reverse('users:login') + f'?next=/profile/{AUTHOR}/unfollow/'
+
 
 class PostURLTests(TestCase):
     @classmethod
