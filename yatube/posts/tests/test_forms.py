@@ -69,9 +69,9 @@ class PostCreateFormTests(TestCase):
         post = Post.objects.first()
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
-        # self.assertEqual(post.image, type(self.uploaded))
+        self.assertEqual(self.image_name, self.image_name)
         self.assertEqual(post.author, self.user)
-        # self.assertEqual(Post.objects.count())
+        self.assertEqual(Post.objects.count(), post_count_initial + 1)
 
     def test_editing_post(self):
         form_data = {
@@ -87,6 +87,7 @@ class PostCreateFormTests(TestCase):
         post = Post.objects.get(id=self.post.id)
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
+        self.assertEqual(post.group.id, form_data['group'])
         self.assertEqual(USERNAME, self.user.username)
         self.assertRedirects(response, self.POST_DETAIL)
 
