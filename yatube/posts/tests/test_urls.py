@@ -5,9 +5,8 @@ from http import HTTPStatus
 
 from ..models import Post, Group, User
 
-AUTHOR = 'author'
-FOLLOWING = 'FOLLOW'
-FOLLOWER = 'user'
+AUTHOR_USERNAME = 'author'
+FOLLOWER_USERNAME = 'user'
 GROUP_TITLE = 'Тестовая группа'
 USERNAME = 'post_author'
 ANOTHER_USERNAME = 'kUZEN'
@@ -19,32 +18,36 @@ GROUP = reverse('posts:group_posts',
                 kwargs={'slug': SLUG})
 LOGIN = reverse('users:login')
 CREATE = reverse('posts:post_create')
-FOLLOW = reverse('posts:follow_index')
+FOLLOW_INDEX_URL = reverse('posts:follow_index')
 FOLLOWING_URL = reverse('posts:profile_follow',
-                        kwargs={'username': AUTHOR})
+                        kwargs={'username': AUTHOR_USERNAME})
 UNFOLLOWING_URL = reverse('posts:profile_unfollow',
-                          kwargs={'username': AUTHOR})
-YOURSELF_FOLLOW = reverse('posts:profile_follow',
-                          kwargs={'username': FOLLOWING})
+                          kwargs={'username': AUTHOR_USERNAME})
+YOURSELF_FOLLOW_URL = reverse('posts:profile_follow',
+                          kwargs={'username': FOLLOWER_USERNAME})
+YOURSELF_UNFOLLOW_URL = reverse('posts:profile_unfollow',
+                          kwargs={'username': FOLLOWER_USERNAME})
 CREATE_LOGIN = reverse('users:login') + '?next=/create/'
 LOGIN_FOLLOW = reverse('users:login') + '?next=/follow/'
 UNFOLLOW = reverse('posts:profile_unfollow',
-                   kwargs={'username': AUTHOR})
-LOGIN_UNFOLLOR = reverse('users:login') + f'?next=/profile/{AUTHOR}/unfollow/'
+                   kwargs={'username': AUTHOR_USERNAME})
+LOGIN_UNFOLLOR = reverse('users:login') + \
+    f'?next=/profile/{AUTHOR_USERNAME}/unfollow/'
 INDEX = reverse('posts:index')
-PROFILE_AUTHOR = reverse('posts:profile',
-                  kwargs={'username': AUTHOR})
+PROFILE_AUTHOR_URL = reverse('posts:profile',
+                             kwargs={'username': AUTHOR_USERNAME})
+PROFILE_FOLLOWER_URL = reverse('posts:profile',
+                               kwargs={'username': FOLLOWER_USERNAME})
 
 
 class PostURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.follow = User.objects.create_user(username=AUTHOR)
         cls.user = User.objects.create_user(username=USERNAME)
-        cls.user_following = User.objects.create_user(username=FOLLOWING)
         cls.another_user = User.objects.create_user(username=ANOTHER_USERNAME)
-        cls.user_follow = User.objects.create_user(username=FOLLOWER)
+        cls.author = User.objects.create_user(username=AUTHOR_USERNAME)
+        cls.follower = User.objects.create_user(username=FOLLOWER_USERNAME)
         cls.group = Group.objects.create(
             title=GROUP_TITLE,
             slug=SLUG,
@@ -66,10 +69,10 @@ class PostURLTests(TestCase):
         cls.authorized_client.force_login(cls.user)
         cls.authorized_client_2 = Client()
         cls.authorized_client_2.force_login(cls.another_user)
-        cls.follower = Client()
-        cls.follower.force_login(cls.user_follow)
-        cls.follow = Client()
-        
+        # cls.author_client = Client()
+        # cls.author_client.force_login(cls.author)
+        cls.follower_client = Client()
+        cls.follower_client.force_login(cls.follower)
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -87,7 +90,7 @@ class PostURLTests(TestCase):
             ['posts/create_post.html',
                 self.POST_EDIT,
                 self.authorized_client],
-            ['posts/follow.html', FOLLOW, self.authorized_client],
+            ['posts/follow.html', FOLLOW_INDEX_URL, self.authorized_client],
         ]
         for template, address, client in CASES:
             with self.subTest(address=address):
@@ -113,15 +116,14 @@ class PostURLTests(TestCase):
             [self.POST_EDIT,
              self.guest_client, HTTPStatus.FOUND],
             [self.POST_EDIT, self.authorized_client_2, HTTPStatus.FOUND],
-            [FOLLOW, self.guest_client, HTTPStatus.FOUND],
-            [FOLLOW, self.follower, HTTPStatus.OK],
+            [FOLLOW_INDEX_URL, self.guest_client, HTTPStatus.FOUND],
+            [FOLLOW_INDEX_URL, self.follower_client, HTTPStatus.OK],
             [FOLLOWING_URL, self.guest_client, HTTPStatus.FOUND],
-            [FOLLOWING_URL, self.follower, HTTPStatus.FOUND],
-            [YOURSELF_FOLLOW, self.follower, HTTPStatus.FOUND],
+            [FOLLOWING_URL, self.follower_client, HTTPStatus.FOUND],
+            [YOURSELF_FOLLOW_URL, self.follower_client, HTTPStatus.FOUND],
             [UNFOLLOWING_URL, self.guest_client, HTTPStatus.FOUND],
-            [UNFOLLOWING_URL, self.follower, HTTPStatus.FOUND],
-            [UNFOLLOWING_URL, self.follow, HTTPStatus.FOUND],
-            [FOLLOWING_URL, self.follow, HTTPStatus.FOUND],
+            [UNFOLLOWING_URL, self.follower_client, HTTPStatus.FOUND],
+            [UNFOLLOWING_URL, self.follower_client, HTTPStatus.NOT_FOUND],
         ]
         for url, client, answer in cases:
             with self.subTest(url=url, client=client, answer=answer):
@@ -134,14 +136,18 @@ class PostURLTests(TestCase):
                               self.POST_EDIT, self.guest_client],
                               [self.POST_DETAIL, self.POST_EDIT,
                                self.authorized_client_2],
-                              [LOGIN_FOLLOW, FOLLOW,
+                              [LOGIN_FOLLOW, FOLLOW_INDEX_URL,
                                self.guest_client],
                               [LOGIN_UNFOLLOR,
                                   UNFOLLOW, self.guest_client],
-                            #   [UNFOLLOW, PROFILE_AUTHOR, self.follow],
-                            #   [FOLLOW, PROFILE_AUTHOR, self.follow],
-                            #    [FOLLOW, PROFILE_AUTHOR, self.user_follow],
-                            #    [UNFOLLOW, PROFILE_AUTHOR, self.user_follow],
+                              [PROFILE_AUTHOR_URL, FOLLOWING_URL,
+                                  self.follower_client],
+                              [PROFILE_AUTHOR_URL, UNFOLLOWING_URL,
+                                  self.follower_client],
+                              [PROFILE_FOLLOWER_URL, YOURSELF_FOLLOW_URL,
+                                  self.follower_client],
+                              [PROFILE_FOLLOWER_URL, YOURSELF_UNFOLLOW_URL,
+                                  self.follower_client],
                               ]
         for destination, address, client in self.REDIRECT_URLS:
             with self.subTest(destination=destination,
