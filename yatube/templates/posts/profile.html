@@ -28,7 +28,7 @@
    {% endif %}
     </div>
         {% for post in page_obj %}
-        {% include "posts/includes/post_card.html" %}
+        {% include "posts/post_list.html" %}
           {% if post.group  %}
             <a href="{% url 'posts:group_posts'  post.group.slug  %}">все посты группы {{post.group}}</a>        
           {% endif %}
