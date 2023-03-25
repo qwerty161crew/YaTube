@@ -1,19 +1,15 @@
 {% if user.is_authenticated %}
-  <div class="row my-3">
+  <div class="row">
     <ul class="nav nav-tabs">
       <li class="nav-item">
-        <a 
-          class="nav-link {% if index is true %}active{% else %}notactive{% endif %}"
-          href="{% url 'posts:index' %}"
-        >
+        {% url 'posts:index' as index_path  %}
+        <a class="nav-link {% if request.path == index_path %}active{% endif %}" href=" {{ index_path }} ">
           Все авторы
         </a>
       </li>
       <li class="nav-item">
-        <a 
-           class="nav-link {% if follow is true %}active{% else %}notactive{% endif %}"
-           href="{% url 'posts:follow_index' %}"
-        >
+        {% url 'posts:follow_index' as follow_path  %}
+        <a class="nav-link {% if request.path == follow_path %}active{% endif %}" href="{{ follow_path }}">
           Избранные авторы
         </a>
       </li>
