@@ -36,7 +36,7 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    follow = (request.user.is_authenticated
+    follow = (request.user.is_authenticated and author != request.user
               and Follow.objects.filter(user=request.user,
                                         author=author).exists())
     posts = author.posts.all()
