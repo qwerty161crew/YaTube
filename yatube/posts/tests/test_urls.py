@@ -24,9 +24,9 @@ FOLLOWING_URL = reverse('posts:profile_follow',
 UNFOLLOWING_URL = reverse('posts:profile_unfollow',
                           kwargs={'username': AUTHOR_USERNAME})
 YOURSELF_FOLLOW_URL = reverse('posts:profile_follow',
-                          kwargs={'username': FOLLOWER_USERNAME})
+                              kwargs={'username': FOLLOWER_USERNAME})
 YOURSELF_UNFOLLOW_URL = reverse('posts:profile_unfollow',
-                          kwargs={'username': FOLLOWER_USERNAME})
+                                kwargs={'username': FOLLOWER_USERNAME})
 CREATE_LOGIN = reverse('users:login') + '?next=/create/'
 LOGIN_FOLLOW = reverse('users:login') + '?next=/follow/'
 UNFOLLOW = reverse('posts:profile_unfollow',

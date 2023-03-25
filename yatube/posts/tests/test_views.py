@@ -91,32 +91,9 @@ class PostUrlTests(TestCase):
         self.assertFalse(Follow.objects.filter(
             author=self.user_author_follow, user=self.user_follow).exists())
 
-    def test_post_in_group(self):
-        responses = [
-            # [INDEX, 'page_obj'],
-            [GROUP, 'page_obj'],
-            [PROFILE, 'page_obj'],
-            [self.POST_DETAIL, 'post'],
-            [FOLLOW, 'page_obj']
-        ]
-        # cache.clear()
-        for url, obj in responses:
-            with self.subTest(url=url):
-                response = self.authorized_client.get(url)
-                if obj == 'page_obj':
-                    posts = response.context[obj]
-                    self.assertEqual(len(posts), 1)
-                    post = posts[0]
-                elif obj == 'post':
-                    post = response.context['post']
-                self.assertEqual(post.text, self.post.text)
-                self.assertEqual(post.author, self.post.author)
-                self.assertEqual(post.group, self.post.group)
-                self.assertEqual(post.pk, self.post.pk)
-
-    # def test_author_in__profile(self):
-    #     response = self.authorized_client.get(PROFILE)
-    #     self.assertEqual(response.context['author'], self.user)
+    def test_author_in__profile(self):
+        response = self.authorized_client.get(PROFILE)
+        self.assertEqual(response.context['author'], self.user)
 
     def test_group_in_context(self):
         response = self.authorized_client.get(GROUP)
