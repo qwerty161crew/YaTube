@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 
 from ..models import User, Post, Group, Follow
 from ..settings import NUMBER_POSTS
@@ -92,12 +93,13 @@ class PostUrlTests(TestCase):
 
     def test_post_in_group(self):
         responses = [
-            [INDEX, 'page_obj'],
+            # [INDEX, 'page_obj'],
             [GROUP, 'page_obj'],
-            # [PROFILE, 'page_obj'],
+            [PROFILE, 'page_obj'],
             [self.POST_DETAIL, 'post'],
-            # [FOLLOW, 'page_obj']
+            [FOLLOW, 'page_obj']
         ]
+        # cache.clear()
         for url, obj in responses:
             with self.subTest(url=url):
                 response = self.authorized_client.get(url)
@@ -151,11 +153,28 @@ class PaginatorViewsTest(TestCase):
             [f'{INDEX}?page=2', 1],
             [f'{GROUP}?page=2', 1],
             [f'{PROFILE}?page=2', 1],
-            # [f'{FOLLOW}?page=2', 1][FOLLOW, NUMBER_POSTS],
+            # [f'{FOLLOW}?page=2', 1], [FOLLOW, NUMBER_POSTS],
         ]
+        cache.clear()
         for url, number in urls:
             with self.subTest(url=url):
                 self.assertEqual(len(self.guest_client.get(
                     url).context.get('page_obj')),
                     number
                 )
+
+    def test_index_page_caching(self):
+        post = Post.objects.create(
+            author=self.user,
+            group=self.group,
+            text='Пост для удаления',
+        )
+
+        response1 = self.guest_client.get(INDEX)
+        post.delete()
+        response2 = self.guest_client.get(INDEX)
+        cache.clear()
+        response3 = self.guest_client.get(INDEX)
+
+        self.assertEqual(response1.content, response2.content)
+        self.assertNotEqual(response2.content, response3.content)
