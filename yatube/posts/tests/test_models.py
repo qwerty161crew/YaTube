@@ -1,6 +1,6 @@
-from django.test import TestCase
+from django.test import TestCase,  Client
 
-from ..models import Group, Post, User, Comment
+from ..models import Group, Post, User, Comment, Follow
 from ..settings import SLICE
 
 
@@ -9,6 +9,7 @@ class PostModelTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='auth')
+        cls.author = User.objects.create_user(username='avtor')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test-slug',
@@ -22,6 +23,10 @@ class PostModelTest(TestCase):
             post=cls.post,
             author=cls.user,
             text='Тестовый коммент объёмом больше пятнадцати символов',
+        )
+        cls.follow = Follow(
+            user=cls.user,
+            author=cls.author
         )
 
     def test_models_have_correct_object_names(self):
@@ -39,3 +44,8 @@ class PostModelTest(TestCase):
         comment = PostModelTest.comment
         expected_object_name = comment.text[:SLICE]
         self.assertEqual(expected_object_name, str(comment))
+
+    def test_following_model(self):
+        following = PostModelTest.follow
+        following_str = f'{str(self.user)} {str(self.author)}'
+        self.assertEqual(str(following), following_str)
