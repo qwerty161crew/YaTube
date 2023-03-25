@@ -175,6 +175,5 @@ class PaginatorViewsTest(TestCase):
         response2 = self.guest_client.get(INDEX)
         cache.clear()
         response3 = self.guest_client.get(INDEX)
-
         self.assertEqual(response1.content, response2.content)
         self.assertNotEqual(response2.content, response3.content)
