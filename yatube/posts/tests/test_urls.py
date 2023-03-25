@@ -31,6 +31,9 @@ LOGIN_FOLLOW = reverse('users:login') + '?next=/follow/'
 UNFOLLOW = reverse('posts:profile_unfollow',
                    kwargs={'username': AUTHOR})
 LOGIN_UNFOLLOR = reverse('users:login') + f'?next=/profile/{AUTHOR}/unfollow/'
+INDEX = reverse('posts:index')
+PROFILE_AUTHOR = reverse('posts:profile',
+                  kwargs={'username': AUTHOR})
 
 
 class PostURLTests(TestCase):
@@ -65,6 +68,8 @@ class PostURLTests(TestCase):
         cls.authorized_client_2.force_login(cls.another_user)
         cls.follower = Client()
         cls.follower.force_login(cls.user_follow)
+        cls.follow = Client()
+        
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -115,6 +120,8 @@ class PostURLTests(TestCase):
             [YOURSELF_FOLLOW, self.follower, HTTPStatus.FOUND],
             [UNFOLLOWING_URL, self.guest_client, HTTPStatus.FOUND],
             [UNFOLLOWING_URL, self.follower, HTTPStatus.FOUND],
+            [UNFOLLOWING_URL, self.follow, HTTPStatus.FOUND],
+            [FOLLOWING_URL, self.follow, HTTPStatus.FOUND],
         ]
         for url, client, answer in cases:
             with self.subTest(url=url, client=client, answer=answer):
@@ -131,6 +138,10 @@ class PostURLTests(TestCase):
                                self.guest_client],
                               [LOGIN_UNFOLLOR,
                                   UNFOLLOW, self.guest_client],
+                            #   [UNFOLLOW, PROFILE_AUTHOR, self.follow],
+                            #   [FOLLOW, PROFILE_AUTHOR, self.follow],
+                            #    [FOLLOW, PROFILE_AUTHOR, self.user_follow],
+                            #    [UNFOLLOW, PROFILE_AUTHOR, self.user_follow],
                               ]
         for destination, address, client in self.REDIRECT_URLS:
             with self.subTest(destination=destination,
