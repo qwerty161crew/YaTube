@@ -81,14 +81,12 @@ class PostUrlTests(TestCase):
         self.assertNotIn(self.post, response.context['page_obj'])
 
     def test_following(self):
-        self.follower.get(FOLLOWING_URL)
-        self.assertTrue(Follow.objects.filter(
-            author=self.user_author_follow, user=self.user_follow).exists())
-
-    def test_unfollowing(self):
-        self.follower.get(UNFOLLOWING_URL)
-        self.assertFalse(Follow.objects.filter(
-            author=self.user_author_follow, user=self.user_follow).exists())
+        cases = ((FOLLOWING_URL, True),
+                 (UNFOLLOWING_URL, False))
+        for url, expect in cases:
+            self.follower.get(url)
+            self.assertEqual(Follow.objects.filter(
+                author=self.user_author_follow, user=self.user_follow).exists(), expect)
 
     def test_author_in__profile(self):
         response = self.authorized_client.get(PROFILE)
