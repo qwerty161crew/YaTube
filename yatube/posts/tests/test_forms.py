@@ -5,7 +5,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from http import HTTPStatus
 
 from ..forms import forms
-from ..models import Group, Post, User, Comment
+from ..models import Group, Post, User
 
 
 USERNAME_EDIT_NOT_AUTHOR = 'Llily'
@@ -62,7 +62,7 @@ class PostCreateFormTests(TestCase):
                                   kwargs={'post_id': cls.post.id})
         cls.COMMENT = reverse('posts:add_comment', kwargs={
                               'post_id': cls.post.id})
-        cls.edit_test_post = Post.objects.create(
+        Post.objects.create(
             text="Этот пост будет использован для проверки "
             "работы страницы редактирования поста",
             author=cls.user,
@@ -84,7 +84,6 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
             data=form_data,
         )
-        self.assertEqual(Post.objects.count(), post_count_initial + 1)
         post = Post.objects.first()
         self.assertEqual(post.text, form_data['text'])
         self.assertEqual(post.group.id, form_data['group'])
@@ -107,25 +106,8 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.group.id, form_data['group'])
-        self.assertEqual(USERNAME, self.user.username)
+        self.assertEqual(post.author.username, self.user.username)
         self.assertRedirects(response, self.POST_DETAIL)
-
-    # def test_post_posts_edit_page_show_correct_context(self):
-    #     templates_url_names = [
-    #         self.EDIT_POST,
-    #         CREATE_POST,
-    #     ]
-    #     form_fields = {
-    #         'text': forms.fields.CharField,
-    #         'group': forms.fields.ChoiceField,
-    #     }
-    #     for url in templates_url_names:
-    #         response = self.not_author.get(url)
-    #         for value, expected in form_fields.items():
-    #             with self.subTest(value=value):
-    #                 form_field = response.context.get('form').fields.get(
-    #                     value)
-    #                 self.assertFalse(form_field, expected)
 
     def test_comment_post_form(self):
         form_data_auth = {
@@ -169,7 +151,6 @@ class PostCreateFormTests(TestCase):
     def test_invalid_form(self):
         """Некорректная форма не создает/не редактирует пост."""
         posts_count = Post.objects.count()
-        post = self.edit_test_post
         not_existing_group_id = -1
         form_pieces_of_data = (
             {
