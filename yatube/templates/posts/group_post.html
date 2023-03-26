@@ -1,4 +1,6 @@
 {% load thumbnail %}
+{% block group %}
+{% block content %}
 <article>
     <ul>
         <li>
@@ -11,3 +13,5 @@
     {% endthumbnail %}
     <p>{{ post.text | linebreaksbr }}</p>
 </article>
+{% endblock %}
+{% endblock %}

@@ -68,8 +68,6 @@ class PostURLTests(TestCase):
         cls.authorized_client.force_login(cls.user)
         cls.authorized_client_2 = Client()
         cls.authorized_client_2.force_login(cls.another_user)
-        # cls.author_client = Client()
-        # cls.author_client.force_login(cls.author)
         cls.follower_client = Client()
         cls.follower_client.force_login(cls.follower)
 

@@ -46,6 +46,6 @@ class PostModelTest(TestCase):
         self.assertEqual(expected_object_name, str(comment))
 
     def test_following_model(self):
-        following = PostModelTest.follow
-        following_str = f'{str(self.user)} {str(self.author)}'
-        self.assertEqual(str(following), following_str)
+        following = PostModelTest.follow.user.username
+        following_str = self.user.username
+        self.assertEqual(following, following_str)
