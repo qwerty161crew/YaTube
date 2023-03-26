@@ -27,16 +27,16 @@ YOURSELF_FOLLOW_URL = reverse('posts:profile_follow',
                               kwargs={'username': FOLLOWER_USERNAME})
 YOURSELF_UNFOLLOW_URL = reverse('posts:profile_unfollow',
                                 kwargs={'username': FOLLOWER_USERNAME})
-CREATE_LOGIN = reverse('users:login') + '?next=/create/'
-LOGIN_FOLLOW = reverse('users:login') + '?next=/follow/'
+CREATE_LOGIN = LOGIN + '?next=' + CREATE
+LOGIN_FOLLOW = LOGIN + '?next=' + FOLLOW_INDEX_URL
 UNFOLLOW = reverse('posts:profile_unfollow',
                    kwargs={'username': AUTHOR_USERNAME})
-LOGIN_UNFOLLOR = reverse('users:login') + \
-    f'?next=/profile/{AUTHOR_USERNAME}/unfollow/'
+
 PROFILE_AUTHOR_URL = reverse('posts:profile',
                              kwargs={'username': AUTHOR_USERNAME})
 PROFILE_FOLLOWER_URL = reverse('posts:profile',
                                kwargs={'username': FOLLOWER_USERNAME})
+LOGIN_UNFOLLOR = LOGIN + '?next=' + UNFOLLOWING_URL
 
 
 class PostURLTests(TestCase):
@@ -60,8 +60,7 @@ class PostURLTests(TestCase):
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-        cls.LOGIN_EDIT = reverse('users:login') + \
-            f'?next=/posts/{cls.post.id}/edit/'
+        cls.LOGIN_EDIT = LOGIN + '?next=' + cls.POST_EDIT
 
         cls.guest_client = Client()
         cls.authorized_client = Client()

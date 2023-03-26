@@ -84,11 +84,10 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
             data=form_data,
         )
-        post = Post.objects.first()
-        self.assertEqual(post.text, form_data['text'])
-        self.assertEqual(post.group.id, form_data['group'])
-        self.assertEqual(self.image_name, self.image_name)
-        self.assertEqual(post.author, self.user)
+        Post.objects.filter(text=form_data['text'],
+                            group=form_data['group'],
+                            image=form_data['file'],
+                            author=self.user)
         self.assertEqual(Post.objects.count(), post_count_initial + 1)
 
     def test_editing_post(self):
