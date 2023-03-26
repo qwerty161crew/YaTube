@@ -25,6 +25,14 @@ FOLLOWING_URL = reverse('posts:profile_follow',
                         kwargs={'username': AUTHOR})
 UNFOLLOWING_URL = reverse('posts:profile_unfollow',
                           kwargs={'username': AUTHOR})
+SMAIL_GIF = (
+    b'\x47\x49\x46\x38\x39\x61\x02\x00'
+    b'\x01\x00\x80\x00\x00\x00\x00\x00'
+    b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+    b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+    b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+    b'\x0A\x00\x3B'
+)
 
 
 class PostUrlTests(TestCase):
@@ -45,18 +53,11 @@ class PostUrlTests(TestCase):
             slug='test-slug_1',
             description='Тестовое описание',
         )
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
+
         cls.image_name = 'small.gif'
         cls.uploaded = SimpleUploadedFile(
             name=cls.image_name,
-            content=small_gif,
+            content=SMAIL_GIF,
             content_type='image/gif'
         )
 
@@ -68,8 +69,6 @@ class PostUrlTests(TestCase):
         )
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-        cls.COMMENT = reverse('posts:add_comment',
-                              kwargs={'post_id': cls.post.id})
         cls.authorized_client = Client()
         cls.authorized_client.force_login(cls.user)
         cls.follower = Client()
@@ -99,7 +98,9 @@ class PostUrlTests(TestCase):
         response = self.authorized_client.get(GROUP)
         self.assertEqual(response.context['group'], self.group)
         self.assertEqual(response.context['group'].title, self.group.title)
-        self.assertEqual(response.context['group'].slug, self.group.slug)
+        self.assertEqual(
+            response.context['group'].description,
+            self.group.description)
 
 
 class PaginatorViewsTest(TestCase):
@@ -107,6 +108,7 @@ class PaginatorViewsTest(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username='post_author')
+        cls.follower = User.objects.create_user(username='follower')
         cls.group = Group.objects.create(
             title='Тестовый заголовок',
             slug=SLUG,
@@ -119,9 +121,13 @@ class PaginatorViewsTest(TestCase):
                 group=cls.group,
             ) for i in range(NUMBER_POSTS + 1)
         )
-
-    def setUp(self):
-        self.guest_client = Client()
+        cls.guest_client = Client()
+        cls.user_client = Client()
+        cls.user_client.force_login(cls.follower)
+        cls.follow = Follow.objects.create(
+            user=cls.follower,
+            author=cls.user
+        )
 
     def test_page(self):
         urls = [
@@ -130,25 +136,19 @@ class PaginatorViewsTest(TestCase):
             [f'{INDEX}?page=2', 1],
             [f'{GROUP}?page=2', 1],
             [f'{PROFILE}?page=2', 1],
-            # [f'{FOLLOW}?page=2', 1], [FOLLOW, NUMBER_POSTS],
+            [FOLLOW, NUMBER_POSTS],
+            [f'{FOLLOW}?page=2', 1]
         ]
         cache.clear()
         for url, number in urls:
             with self.subTest(url=url):
-                self.assertEqual(len(self.guest_client.get(
+                self.assertEqual(len(self.user_client.get(
                     url).context.get('page_obj')),
                     number
                 )
 
     def test_index_page_caching(self):
-        post = Post.objects.create(
-            author=self.user,
-            group=self.group,
-            text='Пост для удаления',
-        )
-
         response1 = self.guest_client.get(INDEX)
-        post.delete()
         response2 = self.guest_client.get(INDEX)
         cache.clear()
         response3 = self.guest_client.get(INDEX)

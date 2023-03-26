@@ -3,8 +3,9 @@ from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from ..forms import forms
-from ..models import Group, Post, User
+from ..models import Group, Post, User, Comment
 
+USERNAME_EDIT_NOT_AUTHOR = 'Llily'
 USERNAME = 'tester'
 PROFILE = reverse('posts:profile', kwargs={'username': USERNAME})
 CREATE_POST = reverse('posts:post_create')
@@ -23,6 +24,7 @@ class PostCreateFormTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = User.objects.create_user(username=USERNAME)
+        cls.user_not_aythor = User.objects.create_user(username=USERNAME_EDIT_NOT_AUTHOR)
         cls.group = Group.objects.create(
             title='Тестовый заголовок',
             slug='test-slug',
@@ -45,19 +47,23 @@ class PostCreateFormTests(TestCase):
             group=cls.group,
             image=cls.uploaded
         )
+        cls.guest_client = Client()
         cls.authorized_client = Client()  # Авторизованный
         cls.authorized_client.force_login(cls.user)
+        cls.not_futhor = Client()
+        cls.not_futhor.force_login(cls.user_not_aythor)
         cls.EDIT_POST = reverse('posts:post_edit',
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
+        cls.COMMENT = reverse('posts:add_comment', kwargs={
+                              'post_id': cls.post.id})
 
     def test_create_post(self):
         form_data = {
             'text': 'text',
             'group': self.group.pk,
             'file': self.uploaded,
-            'author': USERNAME
         }
         """Тестирование создания поста"""
         post_count_initial = Post.objects.count()
@@ -92,6 +98,45 @@ class PostCreateFormTests(TestCase):
         self.assertRedirects(response, self.POST_DETAIL)
 
     def test_post_posts_edit_page_show_correct_context(self):
+        templates_url_names = [
+            self.EDIT_POST,
+            CREATE_POST,
+        ]
+        form_fields = {
+            'text': forms.fields.CharField,
+            'group': forms.fields.ChoiceField,
+        }
+        for url in templates_url_names:
+            response = self.authorized_client.get(url)
+            for value, expected in form_fields.items():
+                with self.subTest(value=value):
+                    form_field = response.context.get('form').fields.get(
+                        value)
+                    self.assertIsInstance(form_field, expected)
+
+    def test_comment_post_form(self):
+        form_data_auth = {
+            'text': 'Коммент аторизированного пользователя'
+        }
+        form_data_guest = {
+            'text': 'Коммент неавторизованного пользователя'
+        }
+        self.authorized_client.post(
+            self.COMMENT,
+            data=form_data_auth,
+            follow=True,
+        )
+        comm_count_auth = self.post.comments.count()
+        self.assertEqual(comm_count_auth, 1, 'Коммент не отправился')
+        self.guest_client.post(
+            self.COMMENT,
+            data=form_data_guest,
+            follow=True,
+        )
+        comm_count_guest = self.post.comments.count()
+        self.assertEqual(comm_count_guest, 1, 'Коммент отправился')
+
+    def test_post_posts_edit_not_author(self):
         templates_url_names = [
             self.EDIT_POST,
             CREATE_POST,
