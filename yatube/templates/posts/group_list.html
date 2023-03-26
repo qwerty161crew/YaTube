@@ -6,7 +6,7 @@
     <div class="container">
         <p>{{ group.description | linebreaksbr }}</p>
         {% for post in page_obj %}
-            {% include "posts/group_post.html" %}
+            {% include "posts/post.html" %}
             {% if not forloop.last %}
                 <hr>
             {% endif %}
