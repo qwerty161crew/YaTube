@@ -86,7 +86,8 @@ class PostUrlTests(TestCase):
         for url, expect in cases:
             self.follower.get(url)
             self.assertEqual(Follow.objects.filter(
-                author=self.user_author_follow, user=self.user_follow).exists(), expect)
+                author=self.user_author_follow,
+                user=self.user_follow).exists(), expect)
 
     def test_author_in__profile(self):
         response = self.authorized_client.get(PROFILE)
