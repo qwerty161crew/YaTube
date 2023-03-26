@@ -9,7 +9,7 @@
       <h5>Всего комментариев автора: {{ author.comments.count }} </h5>
       <h5>Всего подписчиков: {{ author.following.count }} </h5>
       <h5>Всего подписок автора: {{ author.follower.count }} </h5>
-      {% if user.is_authenticated %} 
+      {% if user.is_authenticated and user.username != author.username %} 
         {% if following %}
     <a
       class="btn btn-lg btn-light"
