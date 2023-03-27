@@ -51,4 +51,4 @@ class PostModelTest(TestCase):
         following_str = self.user.username
         author_srt = self.author.username
         self.assertEqual(following, following_str)
-        self.assertEqual(str(author), str(author_srt))
+        self.assertEqual(author, author_srt)

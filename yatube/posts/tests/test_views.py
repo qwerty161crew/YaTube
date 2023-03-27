@@ -95,13 +95,13 @@ class PostUrlTests(TestCase):
 
     def test_group_in_context(self):
         response = self.authorized_client.get(GROUP)
-        context = response.context['group']
-        self.assertEqual(context, self.group)
-        self.assertEqual(context.title, self.group.title)
+        group = response.context['group']
+        self.assertEqual(group, self.group)
+        self.assertEqual(group.title, self.group.title)
         self.assertEqual(
-            context.description,
+            group.description,
             self.group.description)
-        self.assertEqual(context.slug, self.group.slug)
+        self.assertEqual(group.slug, self.group.slug)
 
 
 class PaginatorViewsTest(TestCase):

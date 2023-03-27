@@ -70,7 +70,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         form_data = {
-            'text': 'text',
+            'text': 'text_test',
             'group': self.group.pk,
             'file': self.uploaded,
         }
@@ -78,7 +78,7 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
             data=form_data,
         )
-        post_create = Post.objects.get(id=self.post.id)
+        post_create = Post.objects.filter(author=self.user).latest('id')
         self.assertEqual(form_data['text'], post_create.text)
         self.assertEqual(form_data['group'], post_create.group.id)
         self.assertEqual(post_create.group.id, form_data['group'])
@@ -97,7 +97,7 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        post = Post.objects.get(id=self.post.id)
+        post = Post.objects.filter(author=self.user).latest('id')
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.group.id, form_data['group'])
@@ -114,11 +114,10 @@ class PostCreateFormTests(TestCase):
             data=self.form_data_auth,
             follow=True,
         )
-        comment = Comment.objects.get(id=self.post.id)
-        comm_count_auth = self.post.comments.count()
-        self.assertEqual(comm_count_auth, 1, 'Коммент не отправился')
+        comment = Comment.objects.filter(post_id=self.post.id).latest('id')
+        self.assertEqual(comment.post_id, self.post.id)
         self.assertEqual(self.form_data_auth['text'], comment.text)
-        self.assertEqual(self.post.author.username, comment.author.username)
+        self.assertEqual(self.user.username, comment.author.username)
 
     def test_post_edit(self):
         url_names = [
@@ -139,26 +138,26 @@ class PostCreateFormTests(TestCase):
                     self.assertIsInstance(form_field, expected)
 
     def test_invalid_form(self):
-        clients = (self.guest_client, self.not_author)
+        clients = ((self.guest_client, self.LOGIN_EDIT),
+                   (self.not_author, self.POST_DETAIL))
         form_data = {
             'text': 'TEST_2',
             'group': self.group_1.pk,
             'file': self.uploaded
         }
-        for client in clients:
+        for client, adress in clients:
             response = client.post(
                 self.EDIT_POST,
                 data=form_data,
                 follow=True,
             )
-            post = Post.objects.get(id=self.post.id)
+            post = Post.objects.filter(author=self.user).latest('id')
             self.assertEqual(post.author.username, self.user.username)
-            if client == self.guest_client:
-                self.assertRedirects(response, self.LOGIN_EDIT)
-            else:
-                self.assertRedirects(response, self.POST_DETAIL)
+            self.assertEqual(post.text, self.post.text)
+            self.assertRedirects(response, adress)
 
     def test_commit_field(self):
+        comment_count = Comment.objects.count()
         self.form_data_guest = {
             'text': 'Коммент неавторизованного пользователя'
         }
@@ -167,4 +166,7 @@ class PostCreateFormTests(TestCase):
             data=self.form_data_guest,
             follow=True,
         )
+        comment = Comment.objects.all().count()
         self.assertRedirects(response, self.LOGIN_COMMENT)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(comment_count, comment)
