@@ -95,12 +95,13 @@ class PostUrlTests(TestCase):
 
     def test_group_in_context(self):
         response = self.authorized_client.get(GROUP)
-        self.assertEqual(response.context['group'], self.group)
-        self.assertEqual(response.context['group'].title, self.group.title)
+        context = response.context['group']
+        self.assertEqual(context, self.group)
+        self.assertEqual(context.title, self.group.title)
         self.assertEqual(
-            response.context['group'].description,
+            context.description,
             self.group.description)
-        self.assertEqual(response.context['group'].slug, self.group.slug)
+        self.assertEqual(context.slug, self.group.slug)
 
 
 class PaginatorViewsTest(TestCase):
@@ -149,12 +150,11 @@ class PaginatorViewsTest(TestCase):
 
     def test_index_page_caching(self):
         response1 = self.guest_client.get(INDEX)
-        post = Post.objects.create(
+        Post.objects.create(
             author=self.follower,
             text='Тестовый текст',
             group=self.group,
         )
-        post.delete()
         response2 = self.guest_client.get(INDEX)
         cache.clear()
         response3 = self.guest_client.get(INDEX)
