@@ -100,6 +100,7 @@ class PostUrlTests(TestCase):
         self.assertEqual(
             response.context['group'].description,
             self.group.description)
+        self.assertEqual(response.context['group'].slug, self.group.slug)
 
 
 class PaginatorViewsTest(TestCase):
@@ -148,6 +149,12 @@ class PaginatorViewsTest(TestCase):
 
     def test_index_page_caching(self):
         response1 = self.guest_client.get(INDEX)
+        post = Post.objects.create(
+            author=self.follower,
+            text='Тестовый текст',
+            group=self.group,
+        )
+        post.delete()
         response2 = self.guest_client.get(INDEX)
         cache.clear()
         response3 = self.guest_client.get(INDEX)

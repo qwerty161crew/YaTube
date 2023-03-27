@@ -89,7 +89,7 @@ class Follow(models.Model):
     )
 
     def __str__(self):
-        return self.author.username
+        return f'{self.author.username} {self.user.username}'
 
     class Meta:
         verbose_name = ('Подписка')

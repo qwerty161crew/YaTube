@@ -27,8 +27,8 @@ YOURSELF_FOLLOW_URL = reverse('posts:profile_follow',
                               kwargs={'username': FOLLOWER_USERNAME})
 YOURSELF_UNFOLLOW_URL = reverse('posts:profile_unfollow',
                                 kwargs={'username': FOLLOWER_USERNAME})
-CREATE_LOGIN = LOGIN + '?next=' + CREATE
-LOGIN_FOLLOW = LOGIN + '?next=' + FOLLOW_INDEX_URL
+CREATE_LOGIN = f'{LOGIN}?next={CREATE}'
+LOGIN_FOLLOW = f'{LOGIN}?next={FOLLOW_INDEX_URL}'
 UNFOLLOW = reverse('posts:profile_unfollow',
                    kwargs={'username': AUTHOR_USERNAME})
 
@@ -36,7 +36,7 @@ PROFILE_AUTHOR_URL = reverse('posts:profile',
                              kwargs={'username': AUTHOR_USERNAME})
 PROFILE_FOLLOWER_URL = reverse('posts:profile',
                                kwargs={'username': FOLLOWER_USERNAME})
-LOGIN_UNFOLLOR = LOGIN + '?next=' + UNFOLLOWING_URL
+LOGIN_UNFOLLOR = f'{LOGIN}?next={UNFOLLOWING_URL}'
 
 
 class PostURLTests(TestCase):
@@ -60,7 +60,7 @@ class PostURLTests(TestCase):
                                 kwargs={'post_id': cls.post.id})
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
-        cls.LOGIN_EDIT = LOGIN + '?next=' + cls.POST_EDIT
+        cls.LOGIN_EDIT = f'{LOGIN}?next={cls.POST_EDIT}'
 
         cls.guest_client = Client()
         cls.authorized_client = Client()
@@ -126,25 +126,26 @@ class PostURLTests(TestCase):
                 self.assertEqual(client.get(url).status_code, answer)
 
     def test_urls_redirects(self):
-        REDIRECT_URLS = [[CREATE_LOGIN,
-                          CREATE, self.guest_client],
-                         [self.LOGIN_EDIT,
-                          self.POST_EDIT, self.guest_client],
-                         [self.POST_DETAIL, self.POST_EDIT,
-                          self.authorized_client_2],
-                         [LOGIN_FOLLOW, FOLLOW_INDEX_URL,
-                          self.guest_client],
-                         [LOGIN_UNFOLLOR,
-                          UNFOLLOW, self.guest_client],
-                         [PROFILE_AUTHOR_URL, FOLLOWING_URL,
-                          self.follower_client],
-                         [PROFILE_AUTHOR_URL, UNFOLLOWING_URL,
-                          self.follower_client],
-                         [PROFILE_FOLLOWER_URL, YOURSELF_FOLLOW_URL,
-                          self.follower_client],
-                         [PROFILE_FOLLOWER_URL, YOURSELF_UNFOLLOW_URL,
-                          self.follower_client],
-                         ]
+        REDIRECT_URLS = [
+            [CREATE_LOGIN,
+             CREATE, self.guest_client],
+            [self.LOGIN_EDIT,
+             self.POST_EDIT, self.guest_client],
+            [self.POST_DETAIL, self.POST_EDIT,
+             self.authorized_client_2],
+            [LOGIN_FOLLOW, FOLLOW_INDEX_URL,
+             self.guest_client],
+            [LOGIN_UNFOLLOR,
+             UNFOLLOW, self.guest_client],
+            [PROFILE_AUTHOR_URL, FOLLOWING_URL,
+             self.follower_client],
+            [PROFILE_AUTHOR_URL, UNFOLLOWING_URL,
+             self.follower_client],
+            [PROFILE_FOLLOWER_URL, YOURSELF_FOLLOW_URL,
+             self.follower_client],
+            [PROFILE_FOLLOWER_URL, YOURSELF_UNFOLLOW_URL,
+             self.follower_client],
+        ]
         for destination, address, client in REDIRECT_URLS:
             with self.subTest(destination=destination,
                               address=address, client=client):
