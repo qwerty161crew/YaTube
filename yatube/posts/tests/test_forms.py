@@ -79,11 +79,13 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
             data=form_data,
         )
-        post_create = Post.objects.get()
-        self.assertEqual(form_data['text'], post_create.text)
-        self.assertEqual(form_data['group'], post_create.group.id)
-        self.assertEqual(post_create.group.id, form_data['group'])
-        self.assertEqual(post_create.author.username,
+        post = Post.objects.get()
+        self.assertEqual(form_data['text'], post.text)
+        self.assertTrue(
+            str(form_data['file']).split('.')[0] in str(self.post.image))
+        self.assertEqual(form_data['group'], post.group.id)
+        self.assertEqual(post.group.id, form_data['group'])
+        self.assertEqual(post.author.username,
                          self.post.author.username)
         self.assertRedirects(respons, PROFILE)
 
