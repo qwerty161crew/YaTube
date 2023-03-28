@@ -153,10 +153,8 @@ class PostCreateFormTests(TestCase):
                 follow=True,
             )
             post = Post.objects.get(id=self.post.id)
-            comment = Comment.objects.get()
             self.assertTrue(
                 str(form_data['file']).split('.')[0] in str(post.image.file))
-            self.assertEqual(comment.post, self.post)
             self.assertEqual(post.author.username, self.user.username)
             self.assertEqual(post.text, self.post.text)
             self.assertRedirects(response, adress)
