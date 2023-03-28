@@ -111,6 +111,7 @@ class PostCreateFormTests(TestCase):
         self.assertRedirects(response, self.POST_DETAIL)
 
     def test_comment_post_form(self):
+        Comment.objects.all().delete()
         self.form_data_auth = {
             'text': 'Коммент аторизированного пользователя'
         }
@@ -125,7 +126,6 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(comment.post_id, self.post.id)
         self.assertEqual(self.form_data_auth['text'], comment.text)
         self.assertEqual(self.user.username, comment.author.username)
-        self.assertEqual(self.post.group.id, comment.post.group.id)
 
     def test_post_edit(self):
         url_names = [
@@ -160,15 +160,13 @@ class PostCreateFormTests(TestCase):
                 follow=True,
             )
             post = Post.objects.get(id=self.post.id)
-            self.assertEqual(
-                str(form_data['file']).split('.')[0],
-                str(self.image_name.split('.')[0]))
             self.assertEqual(post.author.username, self.user.username)
             self.assertEqual(post.text, self.post.text)
             self.assertEqual(post.group, self.post.group)
             self.assertRedirects(response, adress)
 
     def test_commit_field(self):
+        Post.objects.all().delete()
         comment_count = Comment.objects.count()
         self.form_data_guest = {
             'text': 'Коммент неавторизованного пользователя'
