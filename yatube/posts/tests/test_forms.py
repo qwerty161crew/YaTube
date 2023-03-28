@@ -99,6 +99,8 @@ class PostCreateFormTests(TestCase):
             follow=True
         )
         post = Post.objects.get(id=self.post.id)
+        self.assertTrue(
+            str(form_data['file']).split('.')[0] in str(post.image.file))
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.group.id, form_data['group'])
