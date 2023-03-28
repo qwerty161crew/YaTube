@@ -48,4 +48,4 @@ class PostModelTest(TestCase):
     def test_following_model(self):
         following = PostModelTest.follow.user.username
         author = PostModelTest.follow.author.username
-        self.assertEqual(str(PostModelTest.follow), f'{author} {following}')
+        self.assertEqual(str(self.follow), f'{author} {following}')
