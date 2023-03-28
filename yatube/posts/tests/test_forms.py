@@ -79,14 +79,12 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
             data=form_data,
         )
-        if Post.objects.count() == 1:
-            try:
-                post = Post.objects.get()
-            except AssertionError:
-                pass
+        self.assertEqual(Post.objects.count(), 1)
+        post = Post.objects.get()
         self.assertEqual(form_data['text'], post.text)
-        self.assertTrue(
-            str(form_data['file']).split('.')[0], self.image_name)
+        self.assertEqual(
+            str(form_data['file']).split('.')[0],
+            str(self.image_name.split('.')[0]))
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author.username,
                          self.post.author.username)
@@ -104,8 +102,9 @@ class PostCreateFormTests(TestCase):
             follow=True
         )
         post = Post.objects.get(id=self.post.id)
-        self.assertTrue(
-            str(form_data['file']).split('.')[0], self.image_name)
+        self.assertEqual(
+            str(form_data['file']).split('.')[0],
+            str(self.image_name.split('.')[0]))
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author.username, self.post.author.username)
@@ -121,11 +120,8 @@ class PostCreateFormTests(TestCase):
             data=self.form_data_auth,
             follow=True,
         )
-        if Comment.objects.count() == 1:
-            try:
-                comment = Comment.objects.get()
-            except AssertionError:
-                pass
+        self.assertEqual(Comment.objects.count(), 1)
+        comment = Comment.objects.get()
         self.assertEqual(comment.post_id, self.post.id)
         self.assertEqual(self.form_data_auth['text'], comment.text)
         self.assertEqual(self.user.username, comment.author.username)
@@ -164,10 +160,12 @@ class PostCreateFormTests(TestCase):
                 follow=True,
             )
             post = Post.objects.get(id=self.post.id)
-            self.assertTrue(
-                str(form_data['file']).split('.')[0], self.image_name)
+            self.assertEqual(
+                str(form_data['file']).split('.')[0],
+                str(self.image_name.split('.')[0]))
             self.assertEqual(post.author.username, self.user.username)
             self.assertEqual(post.text, self.post.text)
+            self.assertEqual(post.group, self.post.group)
             self.assertRedirects(response, adress)
 
     def test_commit_field(self):
@@ -180,7 +178,6 @@ class PostCreateFormTests(TestCase):
             data=self.form_data_guest,
             follow=True,
         )
-        comment = Comment.objects.all().count()
         self.assertRedirects(response, self.LOGIN_COMMENT)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(comment_count, comment)
+        self.assertEqual(comment_count, Comment.objects.all().count())
