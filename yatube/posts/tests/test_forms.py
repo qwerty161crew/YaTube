@@ -69,6 +69,7 @@ class PostCreateFormTests(TestCase):
         cls.LOGIN_EDIT = f'{LOGIN}?next={cls.EDIT_POST}'
 
     def test_create_post(self):
+        Post.objects.all().delete()
         form_data = {
             'text': 'text_test',
             'group': self.group.pk,
@@ -78,7 +79,7 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
             data=form_data,
         )
-        post_create = Post.objects.filter(author=self.user).latest('id')
+        post_create = Post.objects.get()
         self.assertEqual(form_data['text'], post_create.text)
         self.assertEqual(form_data['group'], post_create.group.id)
         self.assertEqual(post_create.group.id, form_data['group'])
@@ -97,7 +98,7 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        post = Post.objects.filter(author=self.user).latest('id')
+        post = Post.objects.get(id=self.post.id)
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.group.id, form_data['group'])
@@ -114,7 +115,7 @@ class PostCreateFormTests(TestCase):
             data=self.form_data_auth,
             follow=True,
         )
-        comment = Comment.objects.filter(post_id=self.post.id).latest('id')
+        comment = Comment.objects.get()
         self.assertEqual(comment.post_id, self.post.id)
         self.assertEqual(self.form_data_auth['text'], comment.text)
         self.assertEqual(self.user.username, comment.author.username)
@@ -137,7 +138,7 @@ class PostCreateFormTests(TestCase):
                         value)
                     self.assertIsInstance(form_field, expected)
 
-    def test_invalid_form(self):
+    def test_comment_guest(self):
         clients = ((self.guest_client, self.LOGIN_EDIT),
                    (self.not_author, self.POST_DETAIL))
         form_data = {
@@ -151,7 +152,11 @@ class PostCreateFormTests(TestCase):
                 data=form_data,
                 follow=True,
             )
-            post = Post.objects.filter(author=self.user).latest('id')
+            post = Post.objects.get(id=self.post.id)
+            comment = Comment.objects.get()
+            self.assertTrue(
+                str(form_data['file']).split('.')[0] in str(post.image.file))
+            self.assertEqual(comment.post, self.post)
             self.assertEqual(post.author.username, self.user.username)
             self.assertEqual(post.text, self.post.text)
             self.assertRedirects(response, adress)
