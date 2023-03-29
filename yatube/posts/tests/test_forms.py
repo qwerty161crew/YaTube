@@ -169,7 +169,6 @@ class PostCreateFormTests(TestCase):
 
     def test_commit_field(self):
         Post.objects.all().delete()
-        comment_count = Comment.objects.count()
         self.form_data_guest = {
             'text': 'Коммент неавторизованного пользователя'
         }
@@ -180,4 +179,4 @@ class PostCreateFormTests(TestCase):
         )
         self.assertRedirects(response, self.LOGIN_COMMENT)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(comment_count, Comment.objects.all().count())
+        self.assertEqual(0, Comment.objects.all().count())
