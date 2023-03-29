@@ -70,7 +70,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         Post.objects.all().delete()
-        image_name = 'some.gif'
+        image_name = 'some.self'
         uploaded = SimpleUploadedFile(
             name=image_name,
             content=SMAIL_GIF,
@@ -92,7 +92,7 @@ class PostCreateFormTests(TestCase):
         test_image_short_name = form_data['image'].name.split('.')[0]
         self.assertEqual(
             f"posts/{test_image_short_name}",
-            post_create.image.name.split('_')[0])
+            post_create.image.name.split('.')[0])
         self.assertEqual(form_data['group'], post_create.group.id)
         self.assertEqual(post_create.author.username,
                          self.post.author.username)
@@ -114,7 +114,7 @@ class PostCreateFormTests(TestCase):
         test_image_short_name = form_data['file'].name.split('.')[0]
         self.assertEqual(
             f"posts/{test_image_short_name}",
-            post.image.name.split('_')[0])
+            post.image.name.split('.')[0])
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author.username, self.post.author.username)
         self.assertRedirects(response, self.POST_DETAIL)
