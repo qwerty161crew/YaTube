@@ -70,7 +70,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         Post.objects.all().delete()
-        image_name = 'some.self_create_image_gif'
+        image_name = 'small.gif'
         uploaded = SimpleUploadedFile(
             name=image_name,
             content=SMAIL_GIF,
@@ -79,19 +79,17 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'text_test',
             'group': self.group.pk,
-            'image': uploaded,
+            'file': uploaded,
         }
         respons = self.authorized_client.post(
             CREATE_POST,
             data=form_data,
             follow=True
         )
+        self.assertEqual(Post.objects.count(), 1)
         post_create = Post.objects.get()
         self.assertEqual(form_data['text'], post_create.text)
-        test_image_short_name = form_data['image'].name.split('.')[0]
-        self.assertEqual(
-            f"posts/{test_image_short_name}",
-            post_create.image.name.split('.')[0])
+        self.assertEqual(str(form_data['file']), uploaded.name)
         self.assertEqual(form_data['group'], post_create.group.id)
         self.assertEqual(post_create.author.username,
                          self.post.author.username)
@@ -110,10 +108,7 @@ class PostCreateFormTests(TestCase):
         )
         post = Post.objects.get(id=self.post.id)
         self.assertEqual(form_data['text'], post.text)
-        test_image_short_name = form_data['file'].name.split('.')[0]
-        self.assertEqual(
-            f"posts/{test_image_short_name}",
-            post.image.name.split('.')[0])
+        self.assertEqual(str(form_data['file']), self.uploaded.name)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author.username, self.post.author.username)
         self.assertRedirects(response, self.POST_DETAIL)
