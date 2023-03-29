@@ -76,18 +76,24 @@ class PostUrlTests(TestCase):
         cls.follower = Client()
         cls.follower.force_login(cls.user_follow)
 
-    def test_post_not_in_another_group(self):
-        response = self.authorized_client.get(GROUP_1)
-        self.assertNotIn(self.post, response.context['page_obj'])
+    def test_post_not_in_another_feed(self):
+        responses = [ 
+            [self.authorized_client, GROUP_1],
+            [self.authorized_client, FOLLOW]
+        ]
+        for client, address in responses:
+            respons = client.get(address)
+            self.assertNotIn(self.post, respons.context['page_obj'])
 
     def test_following(self):
-        cases = ((FOLLOWING_URL, True),
-                 (UNFOLLOWING_URL, False))
-        for url, expect in cases:
-            self.follower.get(url)
-            self.assertEqual(Follow.objects.filter(
-                author=self.user_author_follow,
-                user=self.user_follow).exists(), expect)
+        self.follower.get(FOLLOWING_URL)
+        self.assertTrue(Follow.objects.filter(
+            author=self.user_author_follow, user=self.user_follow).exists())
+
+    def test_unfollowing(self):
+        self.follower.get(UNFOLLOWING_URL)
+        self.assertFalse(Follow.objects.filter(
+            author=self.user_author_follow, user=self.user_follow).exists())
 
     def test_author_in__profile(self):
         response = self.authorized_client.get(PROFILE)
