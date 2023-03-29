@@ -70,7 +70,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         Post.objects.all().delete()
-        image_name = 'some.self'
+        image_name = 'some.self_create_image'
         uploaded = SimpleUploadedFile(
             name=image_name,
             content=SMAIL_GIF,
