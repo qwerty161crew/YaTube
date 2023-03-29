@@ -77,7 +77,7 @@ class PostUrlTests(TestCase):
         cls.follower.force_login(cls.user_follow)
 
     def test_post_not_in_another_feed(self):
-        responses = [ 
+        responses = [
             [self.authorized_client, GROUP_1],
             [self.authorized_client, FOLLOW]
         ]
