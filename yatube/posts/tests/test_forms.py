@@ -70,23 +70,26 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         Post.objects.all().delete()
+        uploaded = SimpleUploadedFile(
+            name=self.image_name,
+            content=SMAIL_GIF,
+            content_type='image/gif'
+        )
         form_data = {
             'text': 'text_test',
             'group': self.group.pk,
-            'file': self.uploaded,
+            'file': uploaded,
         }
         respons = self.authorized_client.post(
             CREATE_POST,
             data=form_data,
         )
         self.assertEqual(Post.objects.count(), 1)
-        post = Post.objects.get()
-        self.assertEqual(form_data['text'], post.text)
-        self.assertEqual(
-            str(form_data['file']).split('.')[0],
-            str(self.image_name.split('.')[0]))
-        self.assertEqual(form_data['group'], post.group.id)
-        self.assertEqual(post.author.username,
+        post_create = Post.objects.get()
+        self.assertEqual(form_data['text'], post_create.text)
+        self.assertEqual(str(form_data['file']), self.uploaded.name)
+        self.assertEqual(form_data['group'], post_create.group.id)
+        self.assertEqual(post_create.author.username,
                          self.post.author.username)
         self.assertRedirects(respons, PROFILE)
 
@@ -102,9 +105,7 @@ class PostCreateFormTests(TestCase):
             follow=True
         )
         post = Post.objects.get(id=self.post.id)
-        self.assertEqual(
-            str(form_data['file']).split('.')[0],
-            str(self.image_name.split('.')[0]))
+        self.assertEqual(str(form_data['file']), self.uploaded.name)
         self.assertEqual(form_data['text'], post.text)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author.username, self.post.author.username)
@@ -162,6 +163,7 @@ class PostCreateFormTests(TestCase):
             post = Post.objects.get(id=self.post.id)
             self.assertEqual(post.author.username, self.user.username)
             self.assertEqual(post.text, self.post.text)
+            self.assertEqual(str(form_data['file']), self.uploaded.name)
             self.assertEqual(post.group, self.post.group)
             self.assertRedirects(response, adress)
 
