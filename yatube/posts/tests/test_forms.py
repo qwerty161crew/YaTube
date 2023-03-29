@@ -70,7 +70,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         Post.objects.all().delete()
-        image_name = 'some.self_create_image'
+        image_name = 'some.self_create_image_gif'
         uploaded = SimpleUploadedFile(
             name=image_name,
             content=SMAIL_GIF,
@@ -86,7 +86,6 @@ class PostCreateFormTests(TestCase):
             data=form_data,
             follow=True
         )
-        self.assertEqual(Post.objects.count(), 1)
         post_create = Post.objects.get()
         self.assertEqual(form_data['text'], post_create.text)
         test_image_short_name = form_data['image'].name.split('.')[0]
