@@ -1,12 +1,15 @@
-from django.test import Client, TestCase
+import shutil
+import tempfile
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.conf import settings
 
 
 from ..forms import forms
 from ..models import Group, Post, User, Comment
 
-
+TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 USERNAME_EDIT_NOT_AUTHOR = 'Llily'
 USERNAME = 'tester'
 PROFILE = reverse('posts:profile', kwargs={'username': USERNAME})
@@ -22,6 +25,7 @@ SMAIL_GIF = (
 LOGIN = reverse('users:login')
 
 
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class PostCreateFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -68,6 +72,11 @@ class PostCreateFormTests(TestCase):
         cls.LOGIN_COMMENT = f'{LOGIN}?next={cls.COMMENT}'
         cls.LOGIN_EDIT = f'{LOGIN}?next={cls.EDIT_POST}'
 
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
     def test_create_post(self):
         Post.objects.all().delete()
         image_name = 'small.gif'
@@ -79,7 +88,7 @@ class PostCreateFormTests(TestCase):
         form_data = {
             'text': 'text_test',
             'group': self.group.pk,
-            'file': uploaded,
+            'image': uploaded,
         }
         respons = self.authorized_client.post(
             CREATE_POST,
@@ -89,7 +98,8 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(Post.objects.count(), 1)
         post_create = Post.objects.get()
         self.assertEqual(form_data['text'], post_create.text)
-        self.assertEqual(str(form_data['file']), uploaded.name)
+        self.assertEqual(
+            f"posts/{form_data['image'].name}", post_create.image.name)
         self.assertEqual(form_data['group'], post_create.group.id)
         self.assertEqual(post_create.author.username,
                          self.post.author.username)
