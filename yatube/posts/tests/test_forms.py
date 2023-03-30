@@ -6,8 +6,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
 
 
-from ..forms import forms
-from ..models import Group, Post, User, Comment
+from django import forms
+from posts.models import Group, Post, User, Comment
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 USERNAME_EDIT_NOT_AUTHOR = 'Llily'
@@ -79,7 +79,7 @@ class PostCreateFormTests(TestCase):
 
     def test_create_post(self):
         Post.objects.all().delete()
-        image_name = 'small.gif'
+        image_name = 'small2.gif'
         uploaded = SimpleUploadedFile(
             name=image_name,
             content=SMAIL_GIF,
@@ -106,10 +106,16 @@ class PostCreateFormTests(TestCase):
         self.assertRedirects(respons, PROFILE)
 
     def test_editing_post(self):
+        image_name = 'image3.gif'
+        uploaded = SimpleUploadedFile(
+            name=image_name,
+            content=SMAIL_GIF,
+            content_type='image/gif'
+        )
         form_data = {
             'text': 'TEST',
             'group': self.group_1.pk,
-            'file': self.uploaded
+            'image': uploaded
         }
         response = self.authorized_client.post(
             self.EDIT_POST,
@@ -118,7 +124,8 @@ class PostCreateFormTests(TestCase):
         )
         post = Post.objects.get(id=self.post.id)
         self.assertEqual(form_data['text'], post.text)
-        self.assertEqual(str(form_data['file']), self.uploaded.name)
+        self.assertEqual(
+            f"posts/{form_data['image'].name}", post.image.name)
         self.assertEqual(form_data['group'], post.group.id)
         self.assertEqual(post.author.username, self.post.author.username)
         self.assertRedirects(response, self.POST_DETAIL)
@@ -146,8 +153,8 @@ class PostCreateFormTests(TestCase):
             CREATE_POST,
         ]
         form_fields = {
-            'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField,
+            'text': forms.CharField,
+            'group': forms.ChoiceField,
             'image': forms.ImageField
         }
         for url in url_names:
@@ -173,11 +180,9 @@ class PostCreateFormTests(TestCase):
                 follow=True,
             )
             post = Post.objects.get(id=self.post.id)
-            self.assertEqual(post.author.username, self.user.username)
+            self.assertEqual(post.author, self.user)
             self.assertEqual(post.text, self.post.text)
-            self.assertEqual(
-                str(form_data['file']).split('.')[0],
-                str(self.image_name.split('.')[0]))
+            self.assertEqual(post.image.name, f'posts/{self.image_name}')
             self.assertEqual(post.group, self.post.group)
             self.assertRedirects(response, adress)
 
