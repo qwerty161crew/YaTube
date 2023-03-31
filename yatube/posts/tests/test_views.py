@@ -82,10 +82,11 @@ class PostUrlTests(TestCase):
             GROUP,
             PROFILE,
             FOLLOW,
+            self.POST_DETAIL
         ]
+        post = Post.objects.get()
         for url in pages_list:
             with self.subTest(address=url):
-                post = Post.objects.get()
                 self.assertEqual(post.text, self.post.text)
                 self.assertEqual(post.author, self.post.author)
                 self.assertEqual(post.group, self.post.group)
