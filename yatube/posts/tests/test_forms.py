@@ -4,9 +4,9 @@ from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.conf import settings
-
-
 from django import forms
+
+
 from posts.models import Group, Post, User, Comment
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
@@ -182,7 +182,8 @@ class PostCreateFormTests(TestCase):
             post = Post.objects.get(id=self.post.id)
             self.assertEqual(post.author, self.user)
             self.assertEqual(post.text, self.post.text)
-            self.assertEqual(post.image.name, f'posts/{self.image_name}')
+            self.assertEqual(
+                self.post.image.name, post.image.name)
             self.assertEqual(post.group, self.post.group)
             self.assertRedirects(response, adress)
 
