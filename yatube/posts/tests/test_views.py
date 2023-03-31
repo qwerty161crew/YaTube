@@ -76,6 +76,22 @@ class PostUrlTests(TestCase):
         cls.follower = Client()
         cls.follower.force_login(cls.user_follow)
 
+    def test_post_at_different_pages(self):
+        pages_list = [
+            INDEX,
+            GROUP,
+            PROFILE,
+            FOLLOW,
+        ]
+        for url in pages_list:
+            with self.subTest(address=url):
+                post = Post.objects.get()
+                self.assertEqual(post.text, self.post.text)
+                self.assertEqual(post.author, self.post.author)
+                self.assertEqual(post.group, self.post.group)
+                self.assertEqual(post.id, self.post.id)
+                self.assertEqual(post.image, self.post.image)
+
     def test_post_not_in_another_feed(self):
         responses = [
             [self.authorized_client, GROUP_1],
