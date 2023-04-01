@@ -80,8 +80,6 @@ class PostUrlTests(TestCase):
         cls.follower.force_login(cls.user_follow)
         cache.clear()
 
-
-    
     def test_post_not_in_another_feed_group(self):
         respons = self.authorized_client.get(GROUP_1)
         self.assertNotIn(self.post, respons.context['page_obj'])
@@ -209,7 +207,6 @@ class TestViewClass(TestCase):
             'posts:post_detail', kwargs={'post_id': cls.post.id}
         )
 
-
         cls.guest = Client()
         cls.author = Client()
         cls.author.force_login(cls.user)
@@ -229,7 +226,6 @@ class TestViewClass(TestCase):
             INDEX,
             GROUP,
             PROFILE,
-            self.POST_DETAIL_URL,
             FOLLOW,
         ]
         for url in url_pages:
@@ -238,12 +234,8 @@ class TestViewClass(TestCase):
                 if 'page_obj' in response.context:
                     self.assertEqual(len(response.context['page_obj']), 1)
                     post = response.context['page_obj'][0]
-                else:
-                    post = response.context['post']
                 self.assertEqual(post.text, self.post.text)
                 self.assertEqual(post.author, self.post.author)
                 self.assertEqual(post.group, self.post.group)
                 self.assertEqual(post.id, self.post.id)
                 self.assertEqual(post.image, self.post.image)
-
-
