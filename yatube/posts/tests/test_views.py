@@ -1,11 +1,7 @@
-import shutil
-import tempfile
-
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
-from django.conf import settings
 
 from ..models import User, Post, Group, Follow
 from ..settings import NUMBER_POSTS
@@ -37,7 +33,6 @@ SMAIL_GIF = (
     b'\x02\x00\x01\x00\x00\x02\x02\x0C'
     b'\x0A\x00\x3B'
 )
-TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
 class PostUrlTests(TestCase):
@@ -67,10 +62,14 @@ class PostUrlTests(TestCase):
         )
 
         cls.post = Post.objects.create(
-            author=cls.user_author_follow,
+            author=cls.user,
             text='Тестовый текст',
             group=cls.group,
             image=cls.uploaded
+        )
+        cls.follow = Follow.objects.create(
+            author=cls.user,
+            user=cls.user_follow
         )
         cls.POST_DETAIL = reverse('posts:post_detail',
                                   kwargs={'post_id': cls.post.id})
@@ -78,7 +77,33 @@ class PostUrlTests(TestCase):
         cls.authorized_client.force_login(cls.user)
         cls.follower = Client()
         cls.follower.force_login(cls.user_follow)
+
         cache.clear()
+
+    def test_post_in_context(self):
+        pages_list = [
+            INDEX,
+            GROUP,
+            PROFILE,
+            FOLLOW,
+            self.POST_DETAIL,
+        ]
+
+        for url in pages_list:
+            with self.subTest(address=url):
+                response = self.follower.get(url)
+
+                if response.context.get('page_obj') is not None:
+                    self.assertEqual(len(response.context.get('page_obj')), 1)
+                    post = response.context.get('page_obj')[0]
+                else:
+                    post = response.context.get('post')
+
+                self.assertEqual(post.text, self.post.text)
+                self.assertEqual(post.author, self.post.author)
+                self.assertEqual(post.group, self.post.group)
+                self.assertEqual(post.id, self.post.id)
+                self.assertEqual(post.image, self.post.image)
 
     def test_post_not_in_another_feed_group(self):
         respons = self.authorized_client.get(GROUP_1)
@@ -169,73 +194,3 @@ class PaginatorViewsTest(TestCase):
         response3 = self.guest_client.get(INDEX)
         self.assertEqual(response1.content, response2.content)
         self.assertNotEqual(response2.content, response3.content)
-
-
-class TestViewClass(TestCase):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.user = User.objects.create_user(username='user')
-        cls.authorized_user = User.objects.create_user(username='user_2')
-        cls.group = Group.objects.create(
-            title='32',
-            slug=SLUG,
-            description='32'
-        )
-        cls.group_2 = Group.objects.create(
-            title='23',
-            slug=SLUG_1,
-            description='23'
-        )
-        uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=SMAIL_GIF,
-            content_type='image/gif'
-        )
-        cls.post = Post.objects.create(
-            text='text',
-            author=cls.user,
-            group=cls.group,
-            image=uploaded,
-        )
-        cls.follow = Follow.objects.create(
-            author=cls.user,
-            user=cls.authorized_user,
-        )
-
-        cls.POST_DETAIL_URL = reverse(
-            'posts:post_detail', kwargs={'post_id': cls.post.id}
-        )
-
-        cls.guest = Client()
-        cls.author = Client()
-        cls.author.force_login(cls.user)
-        cls.another = Client()
-        cls.another.force_login(cls.authorized_user)
-
-        cache.clear()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
-
-    def test_pages_show_correct_context(self):
-        """Страницы сформированы с корректным контекстом"""
-        url_pages = [
-            INDEX,
-            GROUP,
-            PROFILE,
-            FOLLOW,
-        ]
-        for url in url_pages:
-            with self.subTest(url=url):
-                response = self.another.get(url)
-                if 'page_obj' in response.context:
-                    self.assertEqual(len(response.context['page_obj']), 1)
-                    post = response.context['page_obj'][0]
-                self.assertEqual(post.text, self.post.text)
-                self.assertEqual(post.author, self.post.author)
-                self.assertEqual(post.group, self.post.group)
-                self.assertEqual(post.id, self.post.id)
-                self.assertEqual(post.image, self.post.image)
