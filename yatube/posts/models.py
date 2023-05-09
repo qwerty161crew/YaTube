@@ -29,9 +29,8 @@ class Post(CreatedModel):
         related_name='posts',
         verbose_name='автор'
     )
-    group = models.ForeignKey(
-        Group, on_delete=models.SET_NULL,
-        related_name='posts', blank=True, null=True, verbose_name='группа')
+    group = models.ManyToManyField(
+        Group,  related_name='posts', null=True, verbose_name='группа')
 
     image = models.ImageField(
         'Картинка',
