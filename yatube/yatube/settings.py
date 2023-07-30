@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'core.context_processors.year',
     'core.templatetags.user_filters',
-    'sorl.thumbnail'
+    'sorl.thumbnail',
+    'api'
 ]
 
 MIDDLEWARE = [
